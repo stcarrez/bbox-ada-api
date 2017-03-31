@@ -1,0 +1,26 @@
+with "@UTIL_DIR@config";
+with "@UTIL_DIR@util";
+
+project Bbox is
+
+   Version := "@BBOX_VERSION@";
+   Library_Dir := "@BBOX_LIBDIR@";
+   Library_Type : Config.Library_Type_Type := external ("BBOX_LIBRARY_TYPE", "static");
+
+   for Source_Dirs use ("src");
+   for Library_Name use "ada_bbox";
+   for Library_Kind use Library_Type;
+   for Library_Version use "lib" & Project'Library_Name & ".so." & Version;
+  
+   for Library_Dir use Library_Dir & "/bbox/" & Project'Library_Kind;
+   for Object_Dir use "./" & Config'Object_Dir & "/obj/bbox/" & Project'Library_Kind;
+
+   package Binder renames Config.Binder;
+   package Builder renames Config.Builder;
+   package Compiler is
+      for Default_Switches ("Ada") use
+             Config.Compiler'Default_Switches ("Ada") & ("-gnat2012");
+   end Compiler;
+   package Ide renames Config.Ide;
+
+end Bbox;
