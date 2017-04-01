@@ -1,0 +1,37 @@
+with "@UTIL_DIR@config";
+with "@UTIL_DIR@util";
+with "@UTIL_DIR@util_http_curl";
+with "bbox";
+
+project Bbox_Tools is
+
+   for Languages use ("Ada");
+
+   Mains := ("druss-tools.adb");
+
+   for Source_Dirs use ("tools");
+
+   for Main use Mains;
+
+   for Object_Dir use "./" & Config'Object_Dir & "/obj";
+   for Exec_Dir use "./" & Config'Exec_Dir & "/bin";
+
+   package binder is
+      case Config.Mode is
+         when "debug" =>
+            for Default_Switches ("Ada") use ("-E", "-W8");
+
+         when others =>
+            for Default_Switches ("Ada") use ("-E", "-W8");
+
+      end case;
+   end binder;
+
+   package Builder renames Config.Builder;
+   package Compiler is
+      for Default_Switches ("Ada") use
+             Config.Compiler'Default_Switches ("Ada") & ("-gnat2012");
+   end Compiler;
+   package Linker renames Config.Linker;
+
+end Bbox_Tools;
