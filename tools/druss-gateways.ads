@@ -19,6 +19,7 @@ with Ada.Strings.Unbounded;
 with Ada.Containers.Vectors;
 with Util.Properties;
 with Util.Refs;
+with Bbox.API;
 package Druss.Gateways is
 
    type State_Type is (IDLE, READY, BUSY);
@@ -49,8 +50,14 @@ package Druss.Gateways is
       --  Current LAN information (from api/v1/lan).
       Lan    : Util.Properties.Manager;
 
+      --  Wireless information (From api/v1/wireless).
+      Wifi   : Util.Properties.Manager;
+
       --  Current Device information (from api/v1/device).
       Device : Util.Properties.Manager;
+
+      --  The Bbox API client.
+      Client : Bbox.API.Client_Type;
    end record;
    type Gateway_Type_Access is access all Gateway_Type;
 
