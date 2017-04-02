@@ -21,11 +21,13 @@ with Util.Properties;
 with Druss.Commands.Bboxes;
 with Druss.Commands.Get;
 with Druss.Commands.Status;
+with Druss.Commands.Wifi;
 package body Druss.Commands is
 
    Help_Command  : aliased Druss.Commands.Drivers.Help_Command_Type;
    Bbox_Commands : aliased Druss.Commands.Bboxes.Command_Type;
    Get_Commands  : aliased Druss.Commands.Get.Command_Type;
+   Wifi_Commands : aliased Druss.Commands.Wifi.Command_Type;
 
    procedure Initialize is
    begin
@@ -39,6 +41,7 @@ package body Druss.Commands is
       Driver.Add_Command ("help", Help_Command'Access);
       Driver.Add_Command ("bbox", Bbox_Commands'Access);
       Driver.Add_Command ("get", Get_Commands'Access);
+      Driver.Add_Command ("wifi", Wifi_Commands'Access);
       Driver.Add_Command ("status", Druss.Commands.Status.Wan_Status'Access);
    end Initialize;
 
