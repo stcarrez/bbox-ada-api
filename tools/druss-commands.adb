@@ -19,19 +19,23 @@
 with Util.Commands.Drivers;
 with Util.Properties;
 with Druss.Commands.Bboxes;
+with Druss.Commands.Get;
 with Druss.Commands.Status;
 package body Druss.Commands is
 
    Help_Command  : aliased Druss.Commands.Drivers.Help_Command_Type;
    Bbox_Commands : aliased Druss.Commands.Bboxes.Command_Type;
+   Get_Commands  : aliased Druss.Commands.Get.Command_Type;
 
    procedure Initialize is
    begin
       Driver.Set_Description ("Druss - The Bbox master controller");
       Driver.Set_Usage ("[-o file] <command> [<args>]" & ASCII.LF &
-                        "  -o file    The output file to use");
+                          "where:" & ASCII.LF &
+                          "  -o file    The output file to use");
       Driver.Add_Command ("help", Help_Command'Access);
       Driver.Add_Command ("bbox", Bbox_Commands'Access);
+      Driver.Add_Command ("get", Get_Commands'Access);
       Driver.Add_Command ("status", Druss.Commands.Status.Wan_Status'Access);
    end Initialize;
 
