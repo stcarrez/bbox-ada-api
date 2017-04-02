@@ -35,6 +35,10 @@ package Bbox.API is
                   Operation : in String;
                   Result    : in out Util.Properties.Manager);
 
+   --  Execute a GET operation on the Bbox API to retrieve the JSON result and return it.
+   function Get (Client    : in out Client_Type;
+                 Operation : in String) return String;
+
 private
 
    --  Internal operation to get the URI based on the operation being called.
