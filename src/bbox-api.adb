@@ -95,4 +95,17 @@ package body Bbox.API is
       Util.Properties.JSON.Parse_JSON (Result, Response.Get_Body);
    end Get;
 
+   --  ------------------------------
+   --  Execute a GET operation on the Bbox API to retrieve the JSON result and return it.
+   --  ------------------------------
+   function Get (Client    : in out Client_Type;
+                 Operation : in String) return String is
+      URI      : constant String := Client.Get_URI (Operation);
+      Response : Util.Http.Clients.Response;
+   begin
+      Log.Debug ("Get {0}", URI);
+      Client.Http.Get (URI, Response);
+      return Response.Get_Body;
+   end Get;
+
 end Bbox.API;
