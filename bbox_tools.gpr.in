@@ -27,7 +27,12 @@ project Bbox_Tools is
       end case;
    end binder;
 
-   package Builder renames Config.Builder;
+   package Builder is
+      for Default_Switches ("Ada") use
+             Config.Builder'Default_Switches ("Ada");
+      for Executable ("druss-tools.adb") use "druss";
+   end Builder;
+
    package Compiler is
       for Default_Switches ("Ada") use
              Config.Compiler'Default_Switches ("Ada") & ("-gnat2012");
