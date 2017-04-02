@@ -1,4 +1,4 @@
-# API Ada pour la Bbox de Bouygues Telecom et de controle Druss
+# API Ada pour la Bbox de Bouygues Telecom
 
 [![License](http://img.shields.io/badge/license-APACHE2-blue.svg)](LICENSE)
 
