@@ -17,14 +17,11 @@
 -----------------------------------------------------------------------
 with GNAT.Command_Line;  use GNAT.Command_Line;
 with Ada.Command_Line;
-with Bbox.API;
-with Util.Properties;
 with Ada.Text_IO;
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Util.Commands;
 with Util.Http.Clients.Curl;
-with Druss.Gateways;
 with Druss.Config;
 with Druss.Commands;
 procedure Druss.Tools is
@@ -32,20 +29,25 @@ procedure Druss.Tools is
    use Ada.Text_IO;
    use Ada.Strings.Unbounded;
 
-   Debug   : Boolean := False;
-   Verbose : Boolean := False;
-   List    : Druss.Gateways.Gateway_Vector;
-   First   : Natural := 0;
+   Config   : Ada.Strings.Unbounded.Unbounded_String;
+   Output   : Ada.Strings.Unbounded.Unbounded_String;
+   Debug    : Boolean := False;
+   Verbose  : Boolean := False;
+   First    : Natural := 0;
+   All_Args : Util.Commands.Default_Argument_List (0);
 begin
    Druss.Commands.Initialize;
    Initialize_Option_Scan (Stop_At_First_Non_Switch => True, Section_Delimiters => "targs");
    --  Parse the command line
    loop
-      case Getopt ("* v d e E o: t: c:") is
+      case Getopt ("* v d o: c:") is
          when ASCII.NUL => exit;
 
          when 'c' =>
-            null;--  Set_Config_Directory (Parameter);
+            Config := Ada.Strings.Unbounded.To_Unbounded_String (Parameter);
+
+         when 'o' =>
+            Output := Ada.Strings.Unbounded.To_Unbounded_String (Parameter);
 
          when 'd' =>
             Debug := True;
@@ -63,16 +65,17 @@ begin
    end loop;
    Druss.Config.Initialize;
    Util.Http.Clients.Curl.Register;
+   if First >= Ada.Command_Line.Argument_Count then
+      Ada.Text_IO.Put_Line ("Missing command name to execute.");
+      Druss.Commands.Driver.Usage (All_Args);
+      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+      return;
+   end if;
    declare
       Cmd_Name : constant String := Full_Switch;
       Args     : Util.Commands.Default_Argument_List (First + 1);
       Ctx      : Druss.Commands.Context_Type;
    begin
-      if Cmd_Name = "" then
-         Druss.Commands.Driver.Usage (Args);
-         Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
-         return;
-      end if;
       Druss.Config.Get_Gateways (Ctx.Gateways);
       Druss.Commands.Driver.Execute (Cmd_Name, Args, Ctx);
    end;
