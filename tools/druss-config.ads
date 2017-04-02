@@ -16,12 +16,11 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 
-with Util.Properties;
 with Druss.Gateways;
 package Druss.Config is
 
    --  Initialize the configuration.
-   procedure Initialize;
+   procedure Initialize (Path : in String);
 
    --  Get the configuration parameter.
    function Get (Name : in String) return String;
