@@ -17,20 +17,27 @@
 -----------------------------------------------------------------------
 with Ada.Environment_Variables;
 with Ada.Directories;
+with Ada.Strings.Unbounded;
 with Util.Files;
+with Util.Properties;
 package body Druss.Config is
 
-   Cfg : Util.Properties.Manager;
+   Cfg      : Util.Properties.Manager;
+   Cfg_Path : Ada.Strings.Unbounded.Unbounded_String;
 
    --  ------------------------------
    --  Initialize the configuration.
    --  ------------------------------
-   procedure Initialize is
-      Home : constant String := Ada.Environment_Variables.Value ("HOME");
-      Path : constant String := Util.Files.Compose (Home, ".config/druss/druss.properties");
+   procedure Initialize (Path : in String) is
+      Home     : constant String := Ada.Environment_Variables.Value ("HOME");
+      Def_Path : constant String := Util.Files.Compose (Home, ".config/druss/druss.properties");
    begin
-      if Ada.Directories.Exists (Path) then
+      if Path'Length > 0 and then Ada.Directories.Exists (Path) then
          Cfg.Load_Properties (Path);
+         Cfg_Path := Ada.Strings.Unbounded.To_Unbounded_String (Path);
+      elsif Ada.Directories.Exists (Def_Path) then
+         Cfg.Load_Properties (Def_Path);
+         Cfg_Path := Ada.Strings.Unbounded.To_Unbounded_String (Def_Path);
       end if;
    end Initialize;
 
