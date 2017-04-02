@@ -63,7 +63,7 @@ begin
       end case;
       First := First + 1;
    end loop;
-   Druss.Config.Initialize;
+   Druss.Config.Initialize (To_String (Config));
    Util.Http.Clients.Curl.Register;
    if First >= Ada.Command_Line.Argument_Count then
       Ada.Text_IO.Put_Line ("Missing command name to execute.");
