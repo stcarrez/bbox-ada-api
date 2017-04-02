@@ -73,6 +73,7 @@ package body Druss.Gateways is
       Box.Get ("wan/ip", Gateway.Wan);
       Box.Get ("lan/ip", Gateway.Lan);
       Box.Get ("device", Gateway.Device);
+      Box.Get ("wireless", Gateway.Wifi);
    end Refresh;
 
    --  ------------------------------
