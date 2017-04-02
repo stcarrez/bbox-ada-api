@@ -20,11 +20,6 @@ package Druss.Commands.Get is
 
    type Command_Type is new Druss.Commands.Drivers.Command_Type with null record;
 
-   --  Execute the GET API operation and print the raw JSON result.
-   procedure Execute_Operation (Command   : in Command_Type;
-                                Operation : in String;
-                                Context   : in out Context_Type);
-
    --  Execute a GET operation on the Bbox API and return the raw JSON result.
    overriding
    procedure Execute (Command   : in Command_Type;
