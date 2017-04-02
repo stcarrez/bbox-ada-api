@@ -1,5 +1,6 @@
 # API Ada pour la Bbox de Bouygues Telecom
 
+[![Build Status](https://img.shields.io/jenkins/s/http/jenkins.vacs.fr/Druss.svg)](http://jenkins.vacs.fr/job/Druss/)
 [![License](http://img.shields.io/badge/license-APACHE2-blue.svg)](LICENSE)
 
 # Build
