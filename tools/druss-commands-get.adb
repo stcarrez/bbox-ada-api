@@ -16,33 +16,14 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 with Ada.Text_IO;
+with Ada.Containers;
 with Bbox.API;
 with Druss.Gateways;
 package body Druss.Commands.Get is
 
+   use type Ada.Containers.Count_Type;
    use Ada.Text_IO;
    use Ada.Strings.Unbounded;
-
-   --  ------------------------------
-   --  Execute the GET API operation and print the raw JSON result.
-   --  ------------------------------
-   procedure Execute_Operation (Command   : in Command_Type;
-                                Operation : in String;
-                                Context   : in out Context_Type) is
-      pragma Unreferenced (Command);
-      procedure Execute_One (Gateway : in out Druss.Gateways.Gateway_Type);
-
-      procedure Execute_One (Gateway : in out Druss.Gateways.Gateway_Type) is
-         Box     : Bbox.API.Client_Type;
-      begin
-         Box.Set_Server (To_String (Gateway.Ip));
-         Box.Login (To_String (Gateway.Passwd));
-         Ada.Text_IO.Put_Line (Box.Get (Operation));
-      end Execute_One;
-
-   begin
-      Druss.Gateways.Iterate (Context.Gateways, Execute_One'Access);
-   end Execute_Operation;
 
    --  ------------------------------
    --  Execute a GET operation on the Bbox API and return the raw JSON result.
@@ -53,17 +34,54 @@ package body Druss.Commands.Get is
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is
       pragma Unreferenced (Name);
+      procedure Execute_One (Gateway : in out Druss.Gateways.Gateway_Type);
+
+      Need_Colon : Boolean := False;
+
+      --  Execute the GET API operation and print the raw JSON result.
+      procedure Execute_One (Gateway : in out Druss.Gateways.Gateway_Type) is
+         Box     : Bbox.API.Client_Type;
+      begin
+         Box.Set_Server (To_String (Gateway.Ip));
+         Box.Login (To_String (Gateway.Passwd));
+         for I in 1 .. Args.Get_Count loop
+            declare
+               Operation : constant String := Args.Get_Argument (I);
+               Content   : constant String := Box.Get (Operation);
+               Last      : Natural := Content'Last;
+            begin
+               if Need_Colon then
+                  Ada.Text_IO.Put (",");
+               end if;
+
+               while Last > Content'First and Content (Last) = ASCII.LF loop
+                  Last := Last - 1;
+               end loop;
+
+               --  We did a mistake when we designed the Bbox API and used '[' ... ']' arrays
+               --  for most of the JSON result.  Strip that unecessary array.
+               if Content (Content'First) = '[' and Content (Last) = ']' then
+                  Ada.Text_IO.Put_Line (Content (Content'First + 1 .. Last - 1));
+               else
+                  Ada.Text_IO.Put_Line (Box.Get (Operation));
+               end if;
+               Need_Colon := True;
+            end;
+         end loop;
+      end Execute_One;
+
    begin
       if Args.Get_Count = 0 then
          Druss.Commands.Driver.Usage (Args);
+      else
+         if Args.Get_Count > 1 or else Context.Gateways.Length > 1 then
+            Ada.Text_IO.Put_Line ("[");
+         end if;
+         Druss.Gateways.Iterate (Context.Gateways, Execute_One'Access);
+         if Args.Get_Count > 1 or else Context.Gateways.Length > 1 then
+            Ada.Text_IO.Put_Line ("]");
+         end if;
       end if;
-      for I in 1 .. Args.Get_Count loop
-         declare
-            Operation : constant String := Args.Get_Argument (I);
-         begin
-            Execute_Operation (Command, Operation, Context);
-         end;
-      end loop;
    end Execute;
 
    --  ------------------------------
@@ -74,14 +92,18 @@ package body Druss.Commands.Get is
                    Context   : in out Context_Type) is
       pragma Unreferenced (Command, Context);
    begin
-      Put_Line ("get: Execute a GET operation on the Bbox API and print the raw JSON result");
-      Put_Line ("Usage: get <operation>");
+      Put_Line ("get: Execute one or several GET operation on the Bbox API" &
+                  " and print the raw JSON result");
+      Put_Line ("Usage: get <operation>...");
       New_Line;
-      Put_Line ("  The Bbox API operation is called and the raw JSON result is printed.");
+      Put_Line ("  The Bbox API operation are called and the raw JSON result is printed.");
+      Put_Line ("  When several operations are called, a JSON array is formed to insert");
+      Put_Line ("  their result in the final JSON content so that it is valid.");
       Put_Line ("  Examples:");
-      Put_Line ("    get device         Get information about the Bbox");
-      Put_Line ("    get hosts          Get the list of hosts detected by the Bbox");
-      Put_Line ("    get wan/ip         Get information about the WAN connection");
+      Put_Line ("    get device             Get information about the Bbox");
+      Put_Line ("    get hosts              Get the list of hosts detected by the Bbox");
+      Put_Line ("    get wan/ip             Get information about the WAN connection");
+      Put_Line ("    get wan/ip wan/xdsl    Get the WAN connection and xDSL line information");
    end Help;
 
 end Druss.Commands.Get;
