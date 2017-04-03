@@ -22,6 +22,8 @@ with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Util.Commands;
 with Util.Http.Clients.Curl;
+with Util.Log.Loggers;
+with Util.Properties;
 with Druss.Config;
 with Druss.Commands;
 procedure Druss.Tools is
@@ -29,13 +31,24 @@ procedure Druss.Tools is
    use Ada.Text_IO;
    use Ada.Strings.Unbounded;
 
-   Config   : Ada.Strings.Unbounded.Unbounded_String;
-   Output   : Ada.Strings.Unbounded.Unbounded_String;
-   Debug    : Boolean := False;
-   Verbose  : Boolean := False;
-   First    : Natural := 0;
-   All_Args : Util.Commands.Default_Argument_List (0);
+   Log_Config : Util.Properties.Manager;
+   Config     : Ada.Strings.Unbounded.Unbounded_String;
+   Output     : Ada.Strings.Unbounded.Unbounded_String;
+   Debug      : Boolean := False;
+   Verbose    : Boolean := False;
+   First      : Natural := 0;
+   All_Args   : Util.Commands.Default_Argument_List (0);
 begin
+   Log_Config.Set ("log4j.rootCategory", "DEBUG,console");
+   Log_Config.Set ("log4j.appender.console", "Console");
+   Log_Config.Set ("log4j.appender.console.level", "ERROR");
+   Log_Config.Set ("log4j.appender.console.layout", "level-message");
+   Log_Config.Set ("log4j.appender.stdout", "Console");
+   Log_Config.Set ("log4j.appender.stdout.level", "INFO");
+   Log_Config.Set ("log4j.appender.stdout.layout", "message");
+   Log_Config.Set ("log4j.logger.Util", "WARN");
+
+   Util.Log.Loggers.Initialize (Log_Config);
    Druss.Commands.Initialize;
    Initialize_Option_Scan (Stop_At_First_Non_Switch => True, Section_Delimiters => "targs");
    --  Parse the command line
@@ -63,6 +76,13 @@ begin
       end case;
       First := First + 1;
    end loop;
+   if Verbose then
+      Log_Config.Set ("log4j.appender.console.level", "INFO");
+   end if;
+   if Debug then
+      Log_Config.Set ("log4j.appender.console.level", "DEBUG");
+   end if;
+   Util.Log.Loggers.Initialize (Log_Config);
    Druss.Config.Initialize (To_String (Config));
    Util.Http.Clients.Curl.Register;
    if First >= Ada.Command_Line.Argument_Count then
