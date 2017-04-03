@@ -22,6 +22,10 @@ package UPnP.SSDP is
 
    type Scanner_Type is limited new Ada.Finalization.Limited_Controlled with private;
 
+   --  Find the IPv4 addresses of the network interfaces.
+   procedure Find_IPv4_Addresses (Scanner : in out Scanner_Type;
+                                  IPs     : out Util.Strings.Sets.Set);
+
    --  Initialize the SSDP scanner by opening the UDP socket.
    procedure Initialize (Scanner : in out Scanner_Type);
 
