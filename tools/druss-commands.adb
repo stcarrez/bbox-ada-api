@@ -16,8 +16,6 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 
-with Util.Commands.Drivers;
-with Util.Properties;
 with Druss.Commands.Bboxes;
 with Druss.Commands.Get;
 with Druss.Commands.Status;
