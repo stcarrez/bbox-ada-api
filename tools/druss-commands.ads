@@ -17,7 +17,6 @@
 -----------------------------------------------------------------------
 
 with Util.Commands.Drivers;
-with Util.Properties;
 with Druss.Gateways;
 package Druss.Commands is
 
