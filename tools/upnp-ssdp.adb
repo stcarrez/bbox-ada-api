@@ -18,6 +18,8 @@
 with Ada.Strings;
 with Ada.Strings.Unbounded;
 with Ada.Calendar;
+with System;
+with Interfaces.C.Strings;
 with Util.Log.Loggers;
 
 package body UPnP.SSDP is
@@ -29,9 +31,41 @@ package body UPnP.SSDP is
 
    Group : constant String := "239.255.255.250";
 
+   type Sockaddr is record
+      Sa_Family : Interfaces.C.unsigned_short;
+      Sa_Port   : Interfaces.C.unsigned_short;
+      Sa_Addr   : aliased Interfaces.C.char_array (1 .. 8);
+   end record;
+   pragma Convention (C, Sockaddr);
+
+   type If_Address;
+   type If_Address_Access is access all If_Address;
+   type If_Address is record
+      Ifa_Next  : If_Address_Access;
+      Ifa_Name  : Interfaces.C.Strings.chars_ptr;
+      Ifa_Flags : Interfaces.C.unsigned;
+      Ifa_Addr  : access Sockaddr;
+   end record;
+   pragma Convention (C, If_Address);
+
+   function Sys_getifaddrs (ifap : access If_Address_Access) return Interfaces.C.int;
+   pragma Import (C, Sys_getifaddrs, "getifaddrs");
+
+   procedure Sys_freeifaddrs (ifap : If_Address_Access);
+   pragma Import (C, Sys_freeifaddrs, "freeifaddrs");
+
+   function Sys_Inet_Ntop (Af : in Interfaces.C.unsigned_short;
+                           Addr : System.Address;
+                           Dst  : in Interfaces.C.Strings.chars_ptr;
+                           Size : in Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
+   pragma Import (C, Sys_Inet_Ntop, "inet_ntop");
+
    procedure Send (Socket  : in GNAT.Sockets.Socket_Type;
                    Content : in String;
                    To      : access GNAT.Sockets.Sock_Addr_Type);
+   procedure Receive (Socket : in GNAT.Sockets.Socket_Type;
+                      Target : in String;
+                      Desc   : out Ada.Strings.Unbounded.Unbounded_String);
 
    --  ------------------------------
    --  Initialize the SSDP scanner by opening the UDP socket.
@@ -49,6 +83,40 @@ package body UPnP.SSDP is
                                       (GNAT.Sockets.Add_Membership, GNAT.Sockets.Inet_Addr (Group),
                                        GNAT.Sockets.Any_Inet_Addr));
    end Initialize;
+
+   --  ------------------------------
+   --  Find the IPv4 addresses of the network interfaces.
+   --  ------------------------------
+   procedure Find_IPv4_Addresses (Scanner : in out Scanner_Type;
+                                  IPs     : out Util.Strings.Sets.Set) is
+      pragma Unreferenced (Scanner);
+      use type Interfaces.C.int;
+      use type Interfaces.C.Strings.chars_ptr;
+
+      Iflist   : aliased If_Address_Access;
+      Ifp      : If_Address_Access;
+      R        : Interfaces.C.Strings.chars_ptr;
+   begin
+      if Sys_getifaddrs (Iflist'Access) = 0 then
+         R := Interfaces.C.Strings.New_String ("xxx.xxx.xxx.xxx.xxx");
+         Ifp := Iflist;
+         while Ifp /= null loop
+            if Sys_Inet_Ntop (Ifp.Ifa_Addr.Sa_Family, Ifp.Ifa_Addr.Sa_Addr'Address, R, 17)
+              /= Interfaces.C.Strings.Null_Ptr
+            then
+               Log.Debug ("Found interface: {0} - IP {1}",
+                          Interfaces.C.Strings.Value (Ifp.Ifa_Name),
+                          Interfaces.C.Strings.Value (R));
+               if Interfaces.C.Strings.Value (R) /= "::" then
+                  IPs.Include (Interfaces.C.Strings.Value (R));
+               end if;
+            end if;
+            Ifp := Ifp.Ifa_Next;
+         end loop;
+         Interfaces.C.Strings.Free (R);
+         Sys_freeifaddrs (Iflist);
+      end if;
+   end Find_IPv4_Addresses;
 
    procedure Send (Socket  : in GNAT.Sockets.Socket_Type;
                    Content : in String;
