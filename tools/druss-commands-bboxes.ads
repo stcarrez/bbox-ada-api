@@ -1,5 +1,5 @@
 -----------------------------------------------------------------------
---  druss-commands -- Commands available for Druss
+--  druss-commands-bboxes -- Commands to manage the bboxes
 --  Copyright (C) 2017 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
@@ -16,20 +16,18 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 
-with Util.Commands.Drivers;
-with Util.Properties;
-with Util.Commands;
-with Druss.Gateways;
 package Druss.Commands.Bboxes is
 
    type Command_Type is new Druss.Commands.Drivers.Command_Type with null record;
+
+   procedure Discover (Command   : in Command_Type);
 
    --  Execute the command with the arguments.  The command name is passed with the command
    --  arguments.
    overriding
    procedure Execute (Command   : in Command_Type;
                       Name      : in String;
-                      Args      : in Util.Commands.Argument_List'Class;
+                      Args      : in Druss.Commands.Argument_List'Class;
                       Context   : in out Context_Type);
 
    --  Write the help associated with the command.
