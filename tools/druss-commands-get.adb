@@ -43,7 +43,9 @@ package body Druss.Commands.Get is
          Box     : Bbox.API.Client_Type;
       begin
          Box.Set_Server (To_String (Gateway.Ip));
-         Box.Login (To_String (Gateway.Passwd));
+         if Ada.Strings.Unbounded.Length (Gateway.Passwd) > 0 then
+            Box.Login (To_String (Gateway.Passwd));
+         end if;
          for I in 1 .. Args.Get_Count loop
             declare
                Operation : constant String := Args.Get_Argument (I);
