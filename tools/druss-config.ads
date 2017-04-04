@@ -28,4 +28,7 @@ package Druss.Config is
    --  Initalize the list of gateways from the configuration file.
    procedure Get_Gateways (List   : in out Druss.Gateways.Gateway_Vector);
 
+   --  Save the list of gateways.
+   procedure Save_Gateways (List  : in Druss.Gateways.Gateway_Vector);
+
 end Druss.Config;
