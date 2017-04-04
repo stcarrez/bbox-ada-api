@@ -18,19 +18,39 @@
 with Ada.Environment_Variables;
 with Ada.Directories;
 with Ada.Strings.Unbounded;
+with Interfaces.C.Strings;
 with Util.Files;
+with Util.Log.Loggers;
+with Util.Systems.Os;
 with Util.Properties;
 package body Druss.Config is
+
+   use Ada.Strings.Unbounded;
+
+   --  The logger
+   Log   : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Druss.Config");
+
+   function Get_Default_Path return String;
+   procedure Save;
 
    Cfg      : Util.Properties.Manager;
    Cfg_Path : Ada.Strings.Unbounded.Unbounded_String;
 
    --  ------------------------------
+   --  Get the default configuration path.
+   --  ------------------------------
+   function Get_Default_Path return String is
+      Home     : constant String := Ada.Environment_Variables.Value ("HOME");
+      Def_Path : constant String := Util.Files.Compose (Home, ".config/druss/druss.properties");
+   begin
+      return Def_Path;
+   end Get_Default_Path;
+
+   --  ------------------------------
    --  Initialize the configuration.
    --  ------------------------------
    procedure Initialize (Path : in String) is
-      Home     : constant String := Ada.Environment_Variables.Value ("HOME");
-      Def_Path : constant String := Util.Files.Compose (Home, ".config/druss/druss.properties");
+      Def_Path : constant String := Get_Default_Path;
    begin
       if Path'Length > 0 and then Ada.Directories.Exists (Path) then
          Cfg.Load_Properties (Path);
@@ -42,12 +62,27 @@ package body Druss.Config is
    end Initialize;
 
    procedure Save is
-      Path : constant String := Ada.Strings.Unbounded.To_String (Cfg_Path);
+      Path : constant String
+        := (if Length (Cfg_Path) = 0 then Get_Default_Path else To_String (Cfg_Path));
+      Dir  : constant String := Ada.Directories.Containing_Directory (Path);
+      P    : Interfaces.C.Strings.chars_ptr;
    begin
       if not Ada.Directories.Exists (Path) then
-         Ada.Directories.Create_Path (Ada.Directories.Containing_Directory (Path));
+         Ada.Directories.Create_Path (Dir);
+         P := Interfaces.C.Strings.New_String (Dir);
+         if Util.Systems.Os.Sys_Chmod (P, 8#0700#) /= 0 then
+            Log.Error ("Cannot set the permission of {0}", Dir);
+         end if;
+         Interfaces.C.Strings.Free (P);
       end if;
       Cfg.Save_Properties (Path);
+
+      --  Set the permission on the file to allow only the user to read/write that file.
+      P := Interfaces.C.Strings.New_String (Path);
+      if Util.Systems.Os.Sys_Chmod (P, 8#0600#) /= 0 then
+         Log.Error ("Cannot set the permission of {0}", Path);
+      end if;
+      Interfaces.C.Strings.Free (P);
    end Save;
 
    --  ------------------------------
