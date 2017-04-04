@@ -76,6 +76,7 @@ package body UPnP.SSDP is
       Log.Info ("Discovering gateways on the network");
 
       Address.Addr := GNAT.Sockets.Any_Inet_Addr;
+      Address.Port := 0;
       GNAT.Sockets.Create_Socket (Scanner.Socket, GNAT.Sockets.Family_Inet,
                                   GNAT.Sockets.Socket_Datagram);
       GNAT.Sockets.Bind_Socket (Scanner.Socket, Address);
