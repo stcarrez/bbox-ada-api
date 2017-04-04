@@ -20,7 +20,13 @@ package Druss.Commands.Bboxes is
 
    type Command_Type is new Druss.Commands.Drivers.Command_Type with null record;
 
-   procedure Discover (Command   : in Command_Type);
+   procedure Discover (Command   : in Command_Type;
+                       Context   : in out Context_Type);
+
+   --  Add the bbox with the given IP address.
+   procedure Add_Bbox (Command : in Command_Type;
+                       IP      : in String;
+                       Context : in out Context_Type);
 
    --  Execute the command with the arguments.  The command name is passed with the command
    --  arguments.
