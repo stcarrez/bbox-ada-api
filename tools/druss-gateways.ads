@@ -17,10 +17,14 @@
 -----------------------------------------------------------------------
 with Ada.Strings.Unbounded;
 with Ada.Containers.Vectors;
+with Ada.Strings.Hash;
+with Ada.Containers.Indefinite_Hashed_Maps;
 with Util.Properties;
 with Util.Refs;
 with Bbox.API;
 package Druss.Gateways is
+
+   Not_Found : exception;
 
    type State_Type is (IDLE, READY, BUSY);
 
@@ -37,6 +41,9 @@ package Druss.Gateways is
 
       --  API password.
       Passwd : Ada.Strings.Unbounded.Unbounded_String;
+
+      --  The Bbox serial number.
+      Serial : Ada.Strings.Unbounded.Unbounded_String;
 
       --  Directory that contains the images.
       Images : Ada.Strings.Unbounded.Unbounded_String;
@@ -80,9 +87,20 @@ package Druss.Gateways is
    subtype Gateway_Vector is Gateway_Vectors.Vector;
    subtype Gateway_Cursor is Gateway_Vectors.Cursor;
 
+   package Gateway_Maps is
+     new Ada.Containers.Indefinite_Hashed_Maps (Key_Type        => String,
+                                                Element_Type    => Gateway_Ref,
+                                                Hash            => Ada.Strings.Hash,
+                                                Equivalent_Keys => "=",
+                                                "="             => "=");
+
    --  Initalize the list of gateways from the property list.
    procedure Initialize (Config : in Util.Properties.Manager;
                          List   : in out Gateway_Vector);
+
+   --  Save the list of gateways.
+   procedure Save_Gateways (Config : in out Util.Properties.Manager;
+                            List   : in Druss.Gateways.Gateway_Vector);
 
    --  Refresh the information by using the Bbox API.
    procedure Refresh (Gateway : in Gateway_Ref)
@@ -91,5 +109,9 @@ package Druss.Gateways is
    --  Iterate over the list of gateways and execute the <tt>Process</tt> procedure.
    procedure Iterate (List    : in Gateway_Vector;
                       Process : not null access procedure (G : in out Gateway_Type));
+
+   --  Find the gateway with the given IP address.
+   function Find_IP (List : in Gateway_Vector;
+                     IP   : in String) return Gateway_Ref;
 
 end Druss.Gateways;
