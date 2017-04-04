@@ -23,6 +23,7 @@ with Util.Strings;
 with Util.Strings.Sets;
 with Bbox.API;
 with Druss.Gateways;
+with Druss.Config;
 with UPnP.SSDP;
 package body Druss.Commands.Bboxes is
 
@@ -49,22 +50,64 @@ package body Druss.Commands.Bboxes is
          null;
    end Discover;
 
-   procedure Discover (Command   : in Command_Type) is
-      IPs          : Util.Strings.Sets.Set;
+   --  Add the bbox with the given IP address.
+   procedure Add_Bbox (Command : in Command_Type;
+                       IP      : in String;
+                       Context : in out Context_Type) is
+      Box  : Bbox.API.Client_Type;
+      Info : Util.Properties.Manager;
+      Gw   : Druss.Gateways.Gateway_Ref := Druss.Gateways.Find_IP (Context.Gateways, IP);
+   begin
+      if not Gw.Is_Null then
+         Log.Debug ("Bbox {0} is already registered", IP);
+         return;
+      end if;
+      Box.Set_Server (IP);
+      Box.Get ("device", Info);
+      if Info.Get ("device.modelname", "") /= "" then
+         Log.Info ("Found a new bbox at {0}", IP);
+         Gw := Druss.Gateways.Gateway_Refs.Create;
+         Gw.Value.IP := Ada.Strings.Unbounded.To_Unbounded_String (IP);
+         Context.Gateways.Append (Gw);
+      end if;
+
+   exception
+      when E : others =>
+         null;
+   end Add_Bbox;
+
+   procedure Discover (Command   : in Command_Type;
+                       Context   : in out Context_Type) is
       Retry        : Natural := 0;
       Scanner      : UPnP.SSDP.Scanner_Type;
       Itf_IPs      : Util.Strings.Sets.Set;
 
-      procedure Process (URI : in String) is
-         Pos2 : Natural;
+      procedure Check_Bbox (IP : in String) is
+         Box  : Bbox.API.Client_Type;
+         Info : Util.Properties.Manager;
       begin
-         --  http://
-         Pos2 := Util.Strings.Index (URI, ':', 7);
-         if Pos2 > 0 and then not IPs.Contains (URI (URI'First + 7 .. Pos2 - 1)) then
-            Log.Info ("Detected an IGD device at {0}", URI (URI'First + 7 .. Pos2 - 1));
-            IPs.Include (URI (URI'First + 7 .. Pos2 - 1));
+         Box.Set_Server (IP);
+         Box.Get ("device", Info);
+         if Info.Get ("device.modelname", "") /= "" then
+            Log.Info ("Found a bbox at {0}", IP);
          end if;
-         Log.Warn ("Found: {0}", URI);
+
+      exception
+         when E : others =>
+            null;
+      end Check_Bbox;
+
+      procedure Process (URI : in String) is
+         Pos : Natural;
+      begin
+         if URI'Length <= 7 or else URI (URI'First .. URI'First + 6) /= "http://" then
+            return;
+         end if;
+         Pos := Util.Strings.Index (URI, ':', 6);
+         if Pos > 0 then
+            Command.Add_Bbox (URI (URI'First + 7 .. Pos - 1), Context);
+            --  Check_Bbox ();
+         end if;
       end Process;
 
    begin
@@ -79,13 +122,48 @@ package body Druss.Commands.Bboxes is
          Retry := Retry + 1;
       end loop;
 
-      for IP of IPs loop
-         Discover (IP);
-      end loop;
+      Druss.Config.Save_Gateways (Context.Gateways);
    end Discover;
 
+   --  ------------------------------
+   --  Set the password to be used by the Bbox API to connect to the box.
+   --  ------------------------------
+   procedure Password (Command   : in Command_Type;
+                       Args      : in Util.Commands.Argument_List'Class;
+                       Context   : in out Context_Type) is
+
+   begin
+      if Args.Get_Count < 2 then
+         Druss.Commands.Driver.Usage (Args);
+      end if;
+      declare
+         Passwd : constant String := Args.Get_Argument (2);
+         Gw     : Druss.Gateways.Gateway_Ref;
+
+         procedure Change_Password (Gateway : in out Druss.Gateways.Gateway_Type) is
+         begin
+            Gateway.Passwd := Ada.Strings.Unbounded.To_Unbounded_String (Passwd);
+         end Change_Password;
+
+      begin
+         if Args.Get_Count = 2 then
+            Druss.Gateways.Iterate (Context.Gateways, Change_Password'Access);
+         else
+            for I in 3 .. Args.Get_Count loop
+               Gw := Druss.Gateways.Find_IP (Context.Gateways, Args.Get_Argument (I));
+               if not Gw.Is_Null then
+                  Change_Password (Gw.Value.all);
+               end if;
+            end loop;
+         end if;
+         Druss.Config.Save_Gateways (Context.Gateways);
+      end;
+   end Password;
+
+   --  ------------------------------
    --  Execute the command with the arguments.  The command name is passed with the command
    --  arguments.
+   --  ------------------------------
    overriding
    procedure Execute (Command   : in Command_Type;
                       Name      : in String;
@@ -95,11 +173,18 @@ package body Druss.Commands.Bboxes is
       if Args.Get_Count = 0 then
          Druss.Commands.Driver.Usage (Args);
       elsif Args.Get_Argument (1) = "discover" then
-         Command.Discover;
+         Command.Discover (Context);
+      elsif Args.Get_Argument (1) = "password" then
+         Command.Password (Args, Context);
+      else
+         Put_Line ("Invalid sub-command: " & Args.Get_Argument (1));
+         Druss.Commands.Driver.Usage (Args);
       end if;
    end Execute;
 
+   --  ------------------------------
    --  Write the help associated with the command.
+   --  ------------------------------
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
@@ -107,13 +192,14 @@ package body Druss.Commands.Bboxes is
       Put_Line ("bbox: Manage and define the configuration to connect to the Bbox");
       Put_Line ("Usage: bbox <operation>...");
       New_Line;
-      Put_Line ("  The Bbox API operation are called and the raw JSON result is printed.");
-      Put_Line ("  When several operations are called, a JSON array is formed to insert");
-      Put_Line ("  their result in the final JSON content so that it is valid.");
+      Put_Line ("  Druss needs to know the list of Bboxes which are available on the network.");
+      Put_Line ("  It also need some credentials to connect to the Bbox using the Bbox API.");
+      Put_Line ("  The 'bbox' command allows to manage that list and configuration.");
       Put_Line ("  Examples:");
-      Put_Line ("    bbox discover          Discover the bbox(es) connected to the LAN");
-      Put_Line ("    bbox add IP            Add a bbox Get information about the Bbox");
-      Put_Line ("    bbox del IP            Get the list of hosts detected by the Bbox");
+      Put_Line ("    bbox discover               Discover the bbox(es) connected to the LAN");
+      Put_Line ("    bbox add IP                 Add a bbox knowing its IP address");
+      Put_Line ("    bbox del IP                 Delete a bbox from the list");
+      Put_Line ("    bbox password <pass> [IP]   Set the bbox API connection password");
    end Help;
 
 end Druss.Commands.Bboxes;
