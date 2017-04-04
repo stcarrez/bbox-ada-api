@@ -41,6 +41,15 @@ package body Druss.Config is
       end if;
    end Initialize;
 
+   procedure Save is
+      Path : constant String := Ada.Strings.Unbounded.To_String (Cfg_Path);
+   begin
+      if not Ada.Directories.Exists (Path) then
+         Ada.Directories.Create_Path (Ada.Directories.Containing_Directory (Path));
+      end if;
+      Cfg.Save_Properties (Path);
+   end Save;
+
    --  ------------------------------
    --  Get the configuration parameter.
    --  ------------------------------
@@ -56,5 +65,14 @@ package body Druss.Config is
    begin
       Druss.Gateways.Initialize (Cfg, List);
    end Get_Gateways;
+
+   --  ------------------------------
+   --  Save the list of gateways.
+   --  ------------------------------
+   procedure Save_Gateways (List  : in Druss.Gateways.Gateway_Vector) is
+   begin
+      Druss.Gateways.Save_Gateways (Cfg, List);
+      Save;
+   end Save_Gateways;
 
 end Druss.Config;
