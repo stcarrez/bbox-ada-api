@@ -16,6 +16,7 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 with Ada.Text_IO;
+with Ada.Strings.Unbounded;
 with Util.Properties;
 with Druss.Gateways;
 package body Druss.Commands.Status is
