@@ -38,6 +38,7 @@ procedure Druss.Tools is
    Verbose    : Boolean := False;
    First      : Natural := 0;
    All_Args   : Util.Commands.Default_Argument_List (0);
+   Console    : aliased Druss.Commands.Text_Consoles.Console_Type;
 begin
    Log_Config.Set ("log4j.rootCategory", "DEBUG,console");
    Log_Config.Set ("log4j.appender.console", "Console");
@@ -96,6 +97,7 @@ begin
       Args     : Util.Commands.Default_Argument_List (First + 1);
       Ctx      : Druss.Commands.Context_Type;
    begin
+      Ctx.Console := Console'Unchecked_Access;
       Druss.Config.Get_Gateways (Ctx.Gateways);
       Druss.Commands.Driver.Execute (Cmd_Name, Args, Ctx);
    end;
