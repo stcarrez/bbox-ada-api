@@ -108,4 +108,17 @@ package body Bbox.API is
       return Response.Get_Body;
    end Get;
 
+   --  ------------------------------
+   --  Execute a PUT operation on the Bbox API to change some parameter.
+   --  ------------------------------
+   procedure Put (Client    : in out Client_Type;
+                  Operation : in String;
+                  Params    : in String) is
+      URI      : constant String := Client.Get_URI (Operation);
+      Response : Util.Http.Clients.Response;
+   begin
+      Log.Debug ("Put {0}", URI);
+      Client.Http.Put (URI, Params, Response);
+   end Put;
+
 end Bbox.API;
