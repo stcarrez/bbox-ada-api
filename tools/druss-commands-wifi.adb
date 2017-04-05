@@ -17,6 +17,7 @@
 -----------------------------------------------------------------------
 with Ada.Text_IO;
 with Ada.Strings.Unbounded;
+with Bbox.API;
 package body Druss.Commands.Wifi is
 
    use Ada.Strings.Unbounded;
@@ -29,8 +30,20 @@ package body Druss.Commands.Wifi is
                          Args      : in Argument_List'Class;
                          Value     : in String;
                          Context   : in out Context_Type) is
+
+      procedure Radio (Gateway : in out Druss.Gateways.Gateway_Type;
+                       State   : in String) is
+         Box     : Bbox.API.Client_Type;
+      begin
+         Box.Set_Server (To_String (Gateway.Ip));
+         if Ada.Strings.Unbounded.Length (Gateway.Passwd) > 0 then
+            Box.Login (To_String (Gateway.Passwd));
+         end if;
+         Box.Put ("wireless", (if State = "on" then "radio.enable=1" else "radio.enable=0"));
+      end Radio;
+
    begin
-      null;
+      Druss.Commands.Gateway_Command (Command, Args, 1, Radio'Access, Context);
    end Set_Enable;
 
    --  ------------------------------
@@ -112,8 +125,8 @@ package body Druss.Commands.Wifi is
       Put_Line ("wifi: Control and get status about the Bbox Wifi");
       Put_Line ("Usage: wifi {<action>} [<parameters>]");
       New_Line;
-      Put_Line ("  wifi on                 Turn ON the wifi on the Bbox.");
-      Put_Line ("  wifi off                Turn OFF the wifi on the Bbox.");
+      Put_Line ("  wifi on [IP]...         Turn ON the wifi on the Bbox.");
+      Put_Line ("  wifi off [IP]...        Turn OFF the wifi on the Bbox.");
       Put_Line ("  wifi show               Show information about the wifi on the Bbox.");
       Put_Line ("  wifi devices            Show the wifi devices which are connected.");
    end Help;
