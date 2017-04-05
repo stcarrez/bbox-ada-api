@@ -17,11 +17,36 @@
 -----------------------------------------------------------------------
 
 with Util.Commands.Drivers;
+with Util.Commands.Consoles;
+with Util.Commands.Consoles.Text;
 with Druss.Gateways;
 package Druss.Commands is
 
+   --  The list of fields that are printed on the console.
+   type Field_Type is (F_IP_ADDR,
+                       F_COUNT,
+                       F_BOOL,
+                       F_CHANNEL,
+                       F_PROTOCOL,
+                       F_ENCRYPTION,
+                       F_SSID);
+
+   --  The type of notice that are reported.
+   type Notice_Type is (N_HELP,
+                        N_INFO);
+
+   --  Make the generic abstract console interface.
+   package Consoles is
+     new Util.Commands.Consoles (Field_Type  => Field_Type,
+                                 Notice_Type => Notice_Type);
+
+   --  And the text console to write on stdout (a Gtk console could be done someday).
+   package Text_Consoles is
+      new Consoles.Text;
+
    type Context_Type is limited record
       Gateways : Druss.Gateways.Gateway_Vector;
+      Console  : Consoles.Console_Access;
    end record;
 
    package Drivers is
