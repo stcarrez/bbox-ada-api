@@ -17,6 +17,7 @@
 -----------------------------------------------------------------------
 with Ada.Text_IO;
 with Ada.Streams;
+with Ada.Strings.Unbounded;
 with Util.Log.Loggers;
 with Util.Properties;
 with Util.Strings;
