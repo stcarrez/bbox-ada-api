@@ -20,6 +20,17 @@ package Druss.Commands.Wifi is
 
    type Command_Type is new Druss.Commands.Drivers.Command_Type with null record;
 
+   --  Enable or disable with wifi radio.
+   procedure Set_Enable (Command   : in Command_Type;
+                         Args      : in Argument_List'Class;
+                         Value     : in String;
+                         Context   : in out Context_Type);
+
+   --  Execute the wifi 'status' command to print the Wifi current status.
+   procedure Do_Status (Command   : in Command_Type;
+                        Args      : in Argument_List'Class;
+                        Context   : in out Context_Type);
+
    --  Execute a command to control or get status about the Wifi.
    overriding
    procedure Execute (Command   : in Command_Type;
