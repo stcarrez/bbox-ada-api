@@ -57,6 +57,13 @@ package Druss.Commands is
 
    Driver : Drivers.Driver_Type;
 
+   procedure Gateway_Command (Command   : in Drivers.Command_Type'Class;
+                              Args      : in Util.Commands.Argument_List'Class;
+                              Arg_Pos   : in Positive;
+                              Process   : access procedure (Gateway : in out Gateways.Gateway_Type;
+                                                            Param   : in String);
+                              Context   : in out Context_Type);
+
    procedure Initialize;
 
 end Druss.Commands;
