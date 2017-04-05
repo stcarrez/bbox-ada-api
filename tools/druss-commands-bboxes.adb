@@ -133,32 +133,15 @@ package body Druss.Commands.Bboxes is
                        Args      : in Util.Commands.Argument_List'Class;
                        Context   : in out Context_Type) is
 
-   begin
-      if Args.Get_Count < 2 then
-         Druss.Commands.Driver.Usage (Args);
-      end if;
-      declare
-         Passwd : constant String := Args.Get_Argument (2);
-         Gw     : Druss.Gateways.Gateway_Ref;
-
-         procedure Change_Password (Gateway : in out Druss.Gateways.Gateway_Type) is
-         begin
-            Gateway.Passwd := Ada.Strings.Unbounded.To_Unbounded_String (Passwd);
-         end Change_Password;
-
+      procedure Change_Password (Gateway : in out Druss.Gateways.Gateway_Type;
+                                 Passwd  : in String) is
       begin
-         if Args.Get_Count = 2 then
-            Druss.Gateways.Iterate (Context.Gateways, Change_Password'Access);
-         else
-            for I in 3 .. Args.Get_Count loop
-               Gw := Druss.Gateways.Find_IP (Context.Gateways, Args.Get_Argument (I));
-               if not Gw.Is_Null then
-                  Change_Password (Gw.Value.all);
-               end if;
-            end loop;
-         end if;
-         Druss.Config.Save_Gateways (Context.Gateways);
-      end;
+         Gateway.Passwd := Ada.Strings.Unbounded.To_Unbounded_String (Passwd);
+      end Change_Password;
+
+   begin
+      Druss.Commands.Gateway_Command (Command, Args, 2, Change_Password'Access, Context);
+      Druss.Config.Save_Gateways (Context.Gateways);
    end Password;
 
    --  ------------------------------
