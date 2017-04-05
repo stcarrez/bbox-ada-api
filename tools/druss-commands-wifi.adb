@@ -22,37 +22,61 @@ package body Druss.Commands.Wifi is
    use Ada.Strings.Unbounded;
    use Ada.Text_IO;
 
-   procedure Wifi_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
+   --  ------------------------------
+   --  Enable or disable with wifi radio.
+   --  ------------------------------
+   procedure Set_Enable (Command   : in Command_Type;
+                         Args      : in Argument_List'Class;
+                         Value     : in String;
+                         Context   : in out Context_Type) is
    begin
-      Gateway.Refresh;
-      Put (To_String (Gateway.Ip));
-      Set_Col (30);
-      Put (Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
-      Set_Col (33);
-      Put (Gateway.Wifi.Get ("wireless.radio.24.current_channel", " "));
-      Set_Col (37);
-      Put (Gateway.Wifi.Get ("wireless.ssid.24.id", " "));
-      Set_Col (60);
-      Put (Gateway.Wifi.Get ("wireless.ssid.24.security.protocol", " "));
-      Set_Col (70);
-      Put (Gateway.Wifi.Get ("wireless.ssid.24.security.encryption", " "));
-      New_Line;
-      --  Set_Col (70);
-      if Gateway.Wifi.Exists ("wireless.radio.5.enable") then
-         Put (To_String (Gateway.Ip));
-         Set_Col (30);
-         Put (Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
-         Set_Col (33);
-         Put (Gateway.Wifi.Get ("wireless.radio.5.current_channel", " "));
-         Set_Col (37);
-         Put (Gateway.Wifi.Get ("wireless.ssid.5.id", " "));
-         Set_Col (60);
-         Put (Gateway.Wifi.Get ("wireless.ssid.24.security.protocol", " "));
-         Set_Col (70);
-         Put (Gateway.Wifi.Get ("wireless.ssid.24.security.encryption", " "));
-         New_Line;
-      end if;
-   end Wifi_Status;
+      null;
+   end Set_Enable;
+
+   --  ------------------------------
+   --  Execute the wifi 'status' command to print the Wifi current status.
+   --  ------------------------------
+   procedure Do_Status (Command   : in Command_Type;
+                        Args      : in Argument_List'Class;
+                        Context   : in out Context_Type) is
+      Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
+
+      procedure Wifi_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
+      begin
+         Gateway.Refresh;
+         Console.Start_Row;
+         Console.Print_Field (F_IP_ADDR, Gateway.Ip);
+         Console.Print_Field (F_BOOL, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
+         Console.Print_Field (F_CHANNEL, Gateway.Wifi.Get ("wireless.radio.24.current_channel", " "));
+         Console.Print_Field (F_SSID, Gateway.Wifi.Get ("wireless.ssid.24.id", " "));
+         Console.Print_Field (F_PROTOCOL, Gateway.Wifi.Get ("wireless.ssid.24.security.protocol", " "));
+         Console.Print_Field (F_ENCRYPTION, Gateway.Wifi.Get ("wireless.ssid.24.security.encryption", " "));
+         Console.End_Row;
+
+         if not Gateway.Wifi.Exists ("wireless.radio.5.enable") then
+            return;
+         end if;
+         Console.Start_Row;
+         Console.Print_Field (F_IP_ADDR, To_String (Gateway.Ip));
+         Console.Print_Field (F_BOOL, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
+         Console.Print_Field (F_CHANNEL, Gateway.Wifi.Get ("wireless.radio.5.current_channel", " "));
+         Console.Print_Field (F_SSID, Gateway.Wifi.Get ("wireless.ssid.5.id", " "));
+         Console.Print_Field (F_PROTOCOL, Gateway.Wifi.Get ("wireless.ssid.5.security.protocol", " "));
+         Console.Print_Field (F_ENCRYPTION, Gateway.Wifi.Get ("wireless.ssid.5.security.encryption", " "));
+         Console.End_Row;
+      end Wifi_Status;
+
+   begin
+      Console.Start_Title;
+      Console.Print_Title (F_IP_ADDR, "Bbox IP", 15);
+      Console.Print_Title (F_BOOL, "Enable", 8);
+      Console.Print_Title (F_CHANNEL, "Channel", 8);
+      Console.Print_Title (F_SSID, "SSID", 20);
+      Console.Print_Title (F_PROTOCOL, "Protocol", 12);
+      Console.Print_Title (F_ENCRYPTION, "Encryption", 12);
+      Console.End_Title;
+      Druss.Gateways.Iterate (Context.Gateways, Wifi_Status'Access);
+   end Do_Status;
 
    --  ------------------------------
    --  Execute a command to control or get status about the Wifi.
@@ -62,8 +86,20 @@ package body Druss.Commands.Wifi is
                       Name      : in String;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is
+
    begin
-      Druss.Gateways.Iterate (Context.Gateways, Wifi_Status'Access);
+      if Args.Get_Count = 0 then
+         Command.Do_Status (Args, Context);
+      elsif Args.Get_Argument (1) = "on" then
+         Command.Set_Enable (Args, "on", Context);
+      elsif Args.Get_Argument (1) = "off" then
+         Command.Set_Enable (Args, "on", Context);
+      elsif Args.Get_Argument (1) = "status" then
+         Command.Do_Status (Args, Context);
+      else
+         Put_Line ("Invalid sub-command: " & Args.Get_Argument (1));
+         Druss.Commands.Driver.Usage (Args);
+      end if;
    end Execute;
 
    --  ------------------------------
