@@ -16,6 +16,7 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 with Ada.Text_IO;
+with Ada.Strings.Unbounded;
 with Ada.Containers;
 with Bbox.API;
 with Druss.Gateways;
