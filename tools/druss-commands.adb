@@ -27,6 +27,40 @@ package body Druss.Commands is
    Get_Commands  : aliased Druss.Commands.Get.Command_Type;
    Wifi_Commands : aliased Druss.Commands.Wifi.Command_Type;
 
+   procedure Gateway_Command (Command   : in Drivers.Command_Type'Class;
+                              Args      : in Util.Commands.Argument_List'Class;
+                              Arg_Pos   : in Positive;
+                              Process   : access procedure (Gateway : in out Gateways.Gateway_Type;
+                                                            Param   : in String);
+                              Context   : in out Context_Type) is
+
+   begin
+      if Args.Get_Count < Arg_Pos + 1 then
+         Druss.Commands.Driver.Usage (Args);
+      end if;
+      declare
+         Param  : constant String := Args.Get_Argument (Arg_Pos);
+         Gw     : Druss.Gateways.Gateway_Ref;
+
+         procedure Operation (Gateway : in out Druss.Gateways.Gateway_Type) is
+         begin
+            Process (Gateway, Param);
+         end Operation;
+
+      begin
+         if Args.Get_Count = Arg_Pos then
+            Druss.Gateways.Iterate (Context.Gateways, Operation'Access);
+         else
+            for I in Arg_Pos + 1 .. Args.Get_Count loop
+               Gw := Druss.Gateways.Find_IP (Context.Gateways, Args.Get_Argument (I));
+               if not Gw.Is_Null then
+                  Operation (Gw.Value.all);
+               end if;
+            end loop;
+         end if;
+      end;
+   end Gateway_Command;
+
    procedure Initialize is
    begin
       Driver.Set_Description ("Druss - The Bbox master controller");
