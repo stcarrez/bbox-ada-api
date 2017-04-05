@@ -35,6 +35,11 @@ package Bbox.API is
                   Operation : in String;
                   Result    : in out Util.Properties.Manager);
 
+   --  Execute a PUT operation on the Bbox API to change some parameter.
+   procedure Put (Client    : in out Client_Type;
+                  Operation : in String;
+                  Params    : in String);
+
    --  Execute a GET operation on the Bbox API to retrieve the JSON result and return it.
    function Get (Client    : in out Client_Type;
                  Operation : in String) return String;
