@@ -74,4 +74,9 @@ package Druss.Commands is
 
    procedure Initialize;
 
+   --  Print the bbox API status.
+   procedure Print_Status (Console : in Consoles.Console_Access;
+                           Field   : in Field_Type;
+                           Value   : in String);
+
 end Druss.Commands;
