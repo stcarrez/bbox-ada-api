@@ -22,10 +22,11 @@ with Druss.Commands.Status;
 with Druss.Commands.Wifi;
 package body Druss.Commands is
 
-   Help_Command  : aliased Druss.Commands.Drivers.Help_Command_Type;
-   Bbox_Commands : aliased Druss.Commands.Bboxes.Command_Type;
-   Get_Commands  : aliased Druss.Commands.Get.Command_Type;
-   Wifi_Commands : aliased Druss.Commands.Wifi.Command_Type;
+   Help_Command    : aliased Druss.Commands.Drivers.Help_Command_Type;
+   Bbox_Commands   : aliased Druss.Commands.Bboxes.Command_Type;
+   Get_Commands    : aliased Druss.Commands.Get.Command_Type;
+   Wifi_Commands   : aliased Druss.Commands.Wifi.Command_Type;
+   Status_Commands : aliased Druss.Commands.Status.Command_Type;
 
    procedure Gateway_Command (Command   : in Drivers.Command_Type'Class;
                               Args      : in Util.Commands.Argument_List'Class;
@@ -74,7 +75,7 @@ package body Druss.Commands is
       Driver.Add_Command ("bbox", Bbox_Commands'Access);
       Driver.Add_Command ("get", Get_Commands'Access);
       Driver.Add_Command ("wifi", Wifi_Commands'Access);
-      Driver.Add_Command ("status", Druss.Commands.Status.Wan_Status'Access);
+      Driver.Add_Command ("status", Status_Commands'Access);
    end Initialize;
 
 end Druss.Commands;
