@@ -24,6 +24,14 @@ package Druss.Commands is
 
    --  The list of fields that are printed on the console.
    type Field_Type is (F_IP_ADDR,
+                       F_WAN_IP,
+                       F_INTERNET,
+                       F_VOIP,
+                       F_WIFI,
+                       F_WIFI5,
+                       F_ACCESS_CONTROL,
+                       F_DYNDNS,
+                       F_DEVICES,
                        F_COUNT,
                        F_BOOL,
                        F_CHANNEL,
