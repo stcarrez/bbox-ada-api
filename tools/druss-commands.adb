@@ -98,4 +98,20 @@ package body Druss.Commands is
       end if;
    end Print_Status;
 
+   --  ------------------------------
+   --  Print a ON/OFF status.
+   --  ------------------------------
+   procedure Print_On_Off (Console : in Consoles.Console_Access;
+                           Field   : in Field_Type;
+                           Value   : in String) is
+   begin
+      if Value = "1" then
+         Console.Print_Field (Field, "ON");
+      elsif Value = "0" then
+         Console.Print_Field (Field, "OFF");
+      else
+         Console.Print_Field (Field, "");
+      end if;
+   end Print_On_Off;
+
 end Druss.Commands;
