@@ -24,29 +24,69 @@ package body Druss.Commands.Status is
    use Ada.Text_IO;
    use Ada.Strings.Unbounded;
 
-   procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
-   begin
-      Gateway.Refresh;
-      Put (To_String (Gateway.Ip));
-      Set_Col (30);
-      Put (Gateway.Wan.Get ("wan.internet.state", "?"));
-      Set_Col (38);
-      Put (Gateway.Wan.Get ("wan.ip.address", "?"));
-      Set_Col (60);
-      Put (Gateway.Device.Get ("device.numberofboots", "-"));
-      Set_Col (68);
-      Put (Gateway.Device.Get ("device.uptime", "-"));
-      New_Line;
-   end Box_Status;
+   --  ------------------------------
+   --  Execute the wifi 'status' command to print the Wifi current status.
+   --  ------------------------------
+   procedure Do_Status (Command   : in Command_Type;
+                        Args      : in Argument_List'Class;
+                        Context   : in out Context_Type) is
+      Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
 
-   --  ------------------------------
-   --  Report wan status.
-   --  ------------------------------
-   procedure Wan_Status (Name    : in String;
-                         Args    : in Argument_List'Class;
-                         Context : in out Context_Type) is
+      procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
+      begin
+         Gateway.Refresh;
+         Console.Start_Row;
+         Console.Print_Field (F_IP_ADDR, Gateway.Ip);
+         Console.Print_Field (F_WAN_IP, Gateway.Wan.Get ("wan.ip.address", " "));
+         Console.Print_Field (F_INTERNET, Gateway.Wan.Get ("wan.internet.state", " "));
+         Console.Print_Field (F_VOIP, Gateway.Voip.Get ("voip.status", " "));
+         Console.Print_Field (F_WIFI, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
+         if not Gateway.Wifi.Exists ("wireless.radio.5.enable") then
+            Console.Print_Field (F_WIFI5, "");
+         else
+            Console.Print_Field (F_WIFI5, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
+         end if;
+         Console.Print_Field (F_ENCRYPTION, Gateway.Wifi.Get ("wireless.ssid.24.security.encryption", " "));
+         Console.End_Row;
+      end Box_Status;
+
    begin
+      Console.Start_Title;
+      Console.Print_Title (F_IP_ADDR, "LAN IP", 15);
+      Console.Print_Title (F_WAN_IP, "WAN IP", 15);
+      Console.Print_Title (F_INTERNET, "Internet", 9);
+      Console.Print_Title (F_VOIP, "VoIP", 6);
+      Console.Print_Title (F_WIFI, "Wifi 2.4G", 10);
+      Console.Print_Title (F_WIFI5, "Wifi 5G", 10);
+      Console.Print_Title (F_ACCESS_CONTROL, "Parental", 10);
+      Console.Print_Title (F_DYNDNS, "DynDNS", 10);
+      Console.Print_Title (F_DEVICES, "Devices", 12);
+      Console.End_Title;
       Druss.Gateways.Iterate (Context.Gateways, Box_Status'Access);
-   end Wan_Status;
+   end Do_Status;
+
+   --  Execute a status command to report information about the Bbox.
+   overriding
+   procedure Execute (Command   : in Command_Type;
+                      Name      : in String;
+                      Args      : in Argument_List'Class;
+                      Context   : in out Context_Type) is
+   begin
+      Command.Do_Status (Args, Context);
+   end Execute;
+
+   --  Write the help associated with the command.
+   overriding
+   procedure Help (Command   : in Command_Type;
+                   Context   : in out Context_Type) is
+   begin
+      Put_Line ("status: Control and get status about the Bbox Wifi");
+      Put_Line ("Usage: wifi {<action>} [<parameters>]");
+      New_Line;
+      Put_Line ("  status [IP]...         Turn ON the wifi on the Bbox.");
+      Put_Line ("  wifi off [IP]...        Turn OFF the wifi on the Bbox.");
+      Put_Line ("  wifi show               Show information about the wifi on the Bbox.");
+      Put_Line ("  wifi devices            Show the wifi devices which are connected.");
+   end Help;
 
 end Druss.Commands.Status;
