@@ -25,6 +25,8 @@ package body Bbox.API is
    --  The logger
    Log : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Bbox.API");
 
+   function Strip_Unecessary_Array (Content : in String) return String;
+
    --  ------------------------------
    --  Set the server IP address.
    --  ------------------------------
@@ -82,6 +84,24 @@ package body Bbox.API is
    end Login;
 
    --  ------------------------------
+   --  Strip [] for some Json content.
+   --  We did a mistake when we designed the Bbox API and used '[' ... ']' arrays
+   --  for most of the JSON result.  Strip that unecessary array.
+   --  ------------------------------
+   function Strip_Unecessary_Array (Content : in String) return String is
+      Last      : Natural := Content'Last;
+   begin
+      while Last > Content'First and Content (Last) = ASCII.LF loop
+         Last := Last - 1;
+      end loop;
+      if Content (Content'First) = '[' and Content (Last) = ']' then
+         return Content (Content'First + 1 .. Last - 1);
+      else
+         return Content;
+      end if;
+   end Strip_Unecessary_Array;
+
+   --  ------------------------------
    --  Execute a GET operation on the Bbox API to retrieve the result into the property list.
    --  ------------------------------
    procedure Get (Client    : in out Client_Type;
@@ -92,7 +112,7 @@ package body Bbox.API is
    begin
       Log.Debug ("Get {0}", URI);
       Client.Http.Get (URI, Response);
-      Util.Properties.JSON.Parse_JSON (Result, Response.Get_Body);
+      Util.Properties.JSON.Parse_JSON (Result, Strip_Unecessary_Array (Response.Get_Body));
    end Get;
 
    --  ------------------------------
