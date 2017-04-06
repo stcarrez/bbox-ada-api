@@ -78,4 +78,24 @@ package body Druss.Commands is
       Driver.Add_Command ("status", Status_Commands'Access);
    end Initialize;
 
+   --  ------------------------------
+   --  Print the bbox API status.
+   --  ------------------------------
+   procedure Print_Status (Console : in Consoles.Console_Access;
+                           Field   : in Field_Type;
+                           Value   : in String) is
+   begin
+      if Value = "2" then
+         Console.Print_Field (Field, "OK");
+      elsif Value = "-1" then
+         Console.Print_Field (Field, "KO");
+      elsif Value = "1" then
+         Console.Print_Field (Field, "Starting");
+      elsif Value = "0" then
+         Console.Print_Field (Field, "Stopped");
+      else
+         Console.Print_Field (Field, "?");
+      end if;
+   end Print_Status;
+
 end Druss.Commands;
