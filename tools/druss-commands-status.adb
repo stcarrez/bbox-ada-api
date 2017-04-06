@@ -18,6 +18,7 @@
 with Ada.Text_IO;
 with Ada.Strings.Unbounded;
 with Util.Properties;
+with Util.Strings;
 with Druss.Gateways;
 package body Druss.Commands.Status is
 
@@ -31,6 +32,7 @@ package body Druss.Commands.Status is
                         Args      : in Argument_List'Class;
                         Context   : in out Context_Type) is
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
+      N : Natural := 0;
 
       procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
       begin
@@ -38,16 +40,18 @@ package body Druss.Commands.Status is
          Console.Start_Row;
          Console.Print_Field (F_IP_ADDR, Gateway.Ip);
          Console.Print_Field (F_WAN_IP, Gateway.Wan.Get ("wan.ip.address", " "));
-         Console.Print_Field (F_INTERNET, Gateway.Wan.Get ("wan.internet.state", " "));
+         Print_Status (Console, F_INTERNET, Gateway.Wan.Get ("wan.internet.state", " "));
          Console.Print_Field (F_VOIP, Gateway.Voip.Get ("voip.status", " "));
-         Console.Print_Field (F_WIFI, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
+         Print_On_Off (Console, F_WIFI, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
          if not Gateway.Wifi.Exists ("wireless.radio.5.enable") then
             Console.Print_Field (F_WIFI5, "");
          else
-            Console.Print_Field (F_WIFI5, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
+            Print_On_Off (Console, F_WIFI5, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
          end if;
-         Console.Print_Field (F_ENCRYPTION, Gateway.Wifi.Get ("wireless.ssid.24.security.encryption", " "));
+         Console.Print_Field (F_ACCESS_CONTROL, Gateway.IPtv.Get ("iptv.0.address", "x"));
          Console.End_Row;
+         N := N + 1;
+         Gateway.IPtv.Save_Properties ("iptv" & Util.Strings.Image (N) & ".properties");
       end Box_Status;
 
    begin
