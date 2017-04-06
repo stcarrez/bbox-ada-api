@@ -63,6 +63,9 @@ package Druss.Gateways is
       --  Voip information (From api/v1/voip).
       Voip   : Util.Properties.Manager;
 
+      --  IPtv information (From api/v1/iptv).
+      IPtv   : Util.Properties.Manager;
+
       --  Current Device information (from api/v1/device).
       Device : Util.Properties.Manager;
 
