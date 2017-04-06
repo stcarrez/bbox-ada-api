@@ -22,9 +22,22 @@ with Util.Commands;
 with Druss.Gateways;
 package Druss.Commands.Status is
 
-   --  Report wan status.
-   procedure Wan_Status (Name    : in String;
-                         Args    : in Argument_List'Class;
-                         Context : in out Context_Type);
+   type Command_Type is new Druss.Commands.Drivers.Command_Type with null record;
+
+   procedure Do_Status (Command   : in Command_Type;
+                        Args      : in Argument_List'Class;
+                        Context   : in out Context_Type);
+
+   --  Execute a status command to report information about the Bbox.
+   overriding
+   procedure Execute (Command   : in Command_Type;
+                      Name      : in String;
+                      Args      : in Argument_List'Class;
+                      Context   : in out Context_Type);
+
+   --  Write the help associated with the command.
+   overriding
+   procedure Help (Command   : in Command_Type;
+                   Context   : in out Context_Type);
 
 end Druss.Commands.Status;
