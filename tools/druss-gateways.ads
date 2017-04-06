@@ -60,6 +60,9 @@ package Druss.Gateways is
       --  Wireless information (From api/v1/wireless).
       Wifi   : Util.Properties.Manager;
 
+      --  Voip information (From api/v1/voip).
+      Voip   : Util.Properties.Manager;
+
       --  Current Device information (from api/v1/device).
       Device : Util.Properties.Manager;
 
