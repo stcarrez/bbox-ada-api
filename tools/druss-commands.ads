@@ -79,4 +79,9 @@ package Druss.Commands is
                            Field   : in Field_Type;
                            Value   : in String);
 
+   --  Print a ON/OFF status.
+   procedure Print_On_Off (Console : in Consoles.Console_Access;
+                           Field   : in Field_Type;
+                           Value   : in String);
+
 end Druss.Commands;
