@@ -114,6 +114,7 @@ package body Druss.Gateways is
       Box.Get ("device", Gateway.Device);
       Box.Get ("wireless", Gateway.Wifi);
       Box.Get ("voip", Gateway.Voip);
+      Box.Get ("iptv", Gateway.IPtv);
       if Gateway.Device.Exists ("device.serialnumber") then
          Gateway.Serial := Gateway.Device.Get ("device.serialnumber");
       end if;
