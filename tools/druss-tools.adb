@@ -47,7 +47,8 @@ begin
    Log_Config.Set ("log4j.appender.stdout", "Console");
    Log_Config.Set ("log4j.appender.stdout.level", "INFO");
    Log_Config.Set ("log4j.appender.stdout.layout", "message");
-   Log_Config.Set ("log4j.logger.Util", "WARN");
+   Log_Config.Set ("log4j.logger.Util", "FATAL");
+   Log_Config.Set ("log4j.logger.Bbox", "FATAL");
 
    Util.Log.Loggers.Initialize (Log_Config);
    Druss.Commands.Initialize;
@@ -77,8 +78,10 @@ begin
       end case;
       First := First + 1;
    end loop;
-   if Verbose then
+   if Verbose or Debug then
       Log_Config.Set ("log4j.appender.console.level", "INFO");
+      Log_Config.Set ("log4j.logger.Util", "WARN");
+      Log_Config.Set ("log4j.logger.Bbox", "ERR");
    end if;
    if Debug then
       Log_Config.Set ("log4j.appender.console.level", "DEBUG");
