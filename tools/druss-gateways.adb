@@ -18,6 +18,7 @@
 with Util.Properties.Basic;
 with Util.Strings;
 with Util.Log.Loggers;
+with Util.Http.Clients;
 with Bbox.API;
 package body Druss.Gateways is
 
@@ -45,12 +46,15 @@ package body Druss.Gateways is
       end if;
    end "=";
 
+   package Int_Property renames Util.Properties.Basic.Integer_Property;
+   package Bool_Property renames Util.Properties.Basic.Boolean_Property;
+
    --  ------------------------------
    --  Initalize the list of gateways from the property list.
    --  ------------------------------
    procedure Initialize (Config : in Util.Properties.Manager;
                          List   : in out Gateway_Vector) is
-      Count : constant Natural := Util.Properties.Basic.Integer_Property.Get (Config, "druss.bbox.count", 0);
+      Count : constant Natural := Int_Property.Get (Config, "druss.bbox.count", 0);
    begin
       for I in 1 .. Count loop
          declare
@@ -63,6 +67,7 @@ package body Druss.Gateways is
             end if;
             Gw.Value.Passwd := Config.Get (Base & ".password");
             Gw.Value.Serial := Config.Get (Base & ".serial");
+            Gw.Value.Enable := Bool_Property.Get (Config, Base & ".enable", True);
             List.Append (Gw);
 
          exception
@@ -87,6 +92,7 @@ package body Druss.Gateways is
             Config.Set (Base & ".ip", Gw.Value.Ip);
             Config.Set (Base & ".password", Gw.Value.Passwd);
             Config.Set (Base & ".serial", Gw.Value.Serial);
+            Bool_Property.Set (Config, Base & ".enable", Gw.Value.Enable);
 
          exception
             when Util.Properties.NO_PROPERTY =>
@@ -115,9 +121,15 @@ package body Druss.Gateways is
       Box.Get ("wireless", Gateway.Wifi);
       Box.Get ("voip", Gateway.Voip);
       Box.Get ("iptv", Gateway.IPtv);
+      Box.Get ("hosts", Gateway.Hosts);
       if Gateway.Device.Exists ("device.serialnumber") then
          Gateway.Serial := Gateway.Device.Get ("device.serialnumber");
       end if;
+
+   exception
+      when Util.Http.Clients.Connection_Error =>
+         Log.Error ("Cannot connect to {0}", To_String (Gateway.IP));
+
    end Refresh;
 
    --  ------------------------------
@@ -132,10 +144,14 @@ package body Druss.Gateways is
    --  Iterate over the list of gateways and execute the <tt>Process</tt> procedure.
    --  ------------------------------
    procedure Iterate (List    : in Gateway_Vector;
+                      Mode    : in Iterate_Type := ITER_ALL;
                       Process : not null access procedure (G : in out Gateway_Type)) is
+      Expect : constant Boolean := Mode = ITER_ENABLE;
    begin
       for G of List loop
-         Process (G.Value.all);
+         if Mode = ITER_ALL or else G.Value.Enable = Expect then
+            Process (G.Value.all);
+         end if;
       end loop;
    end Iterate;
 
