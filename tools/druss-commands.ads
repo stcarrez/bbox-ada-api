@@ -24,14 +24,22 @@ package Druss.Commands is
 
    --  The list of fields that are printed on the console.
    type Field_Type is (F_IP_ADDR,
+                       F_BBOX_IP_ADDR,
                        F_WAN_IP,
+                       F_ETHERNET,
                        F_INTERNET,
                        F_VOIP,
+                       F_HOSTNAME,
+                       F_CONNECTION,
+                       F_DEVTYPE,
+                       F_ACTIVE,
+                       F_LINK,
                        F_WIFI,
                        F_WIFI5,
                        F_ACCESS_CONTROL,
                        F_DYNDNS,
                        F_DEVICES,
+                       F_UPTIME,
                        F_COUNT,
                        F_BOOL,
                        F_CHANNEL,
@@ -41,6 +49,7 @@ package Druss.Commands is
 
    --  The type of notice that are reported.
    type Notice_Type is (N_HELP,
+                        N_USAGE,
                         N_INFO);
 
    --  Make the generic abstract console interface.
@@ -81,6 +90,11 @@ package Druss.Commands is
 
    --  Print a ON/OFF status.
    procedure Print_On_Off (Console : in Consoles.Console_Access;
+                           Field   : in Field_Type;
+                           Value   : in String);
+
+   --  Print a uptime.
+   procedure Print_Uptime (Console : in Consoles.Console_Access;
                            Field   : in Field_Type;
                            Value   : in String);
 
