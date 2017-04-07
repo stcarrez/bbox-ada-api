@@ -15,11 +15,13 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
-
+with Util.Strings;
 with Druss.Commands.Bboxes;
 with Druss.Commands.Get;
 with Druss.Commands.Status;
 with Druss.Commands.Wifi;
+with Druss.Commands.Devices;
+with Druss.Commands.Ping;
 package body Druss.Commands is
 
    Help_Command    : aliased Druss.Commands.Drivers.Help_Command_Type;
@@ -27,6 +29,8 @@ package body Druss.Commands is
    Get_Commands    : aliased Druss.Commands.Get.Command_Type;
    Wifi_Commands   : aliased Druss.Commands.Wifi.Command_Type;
    Status_Commands : aliased Druss.Commands.Status.Command_Type;
+   Device_Commands : aliased Druss.Commands.Devices.Command_Type;
+   Ping_Commands   : aliased Druss.Commands.Ping.Command_Type;
 
    procedure Gateway_Command (Command   : in Drivers.Command_Type'Class;
                               Args      : in Util.Commands.Argument_List'Class;
@@ -36,7 +40,8 @@ package body Druss.Commands is
                               Context   : in out Context_Type) is
 
    begin
-      if Args.Get_Count < Arg_Pos + 1 then
+      if Args.Get_Count < Arg_Pos then
+         Context.Console.Notice (N_USAGE, "Missing argument for command");
          Druss.Commands.Driver.Usage (Args);
       end if;
       declare
@@ -50,7 +55,7 @@ package body Druss.Commands is
 
       begin
          if Args.Get_Count = Arg_Pos then
-            Druss.Gateways.Iterate (Context.Gateways, Operation'Access);
+            Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Operation'Access);
          else
             for I in Arg_Pos + 1 .. Args.Get_Count loop
                Gw := Druss.Gateways.Find_IP (Context.Gateways, Args.Get_Argument (I));
@@ -76,6 +81,8 @@ package body Druss.Commands is
       Driver.Add_Command ("get", Get_Commands'Access);
       Driver.Add_Command ("wifi", Wifi_Commands'Access);
       Driver.Add_Command ("status", Status_Commands'Access);
+      Driver.Add_Command ("devices", Device_Commands'Access);
+      Driver.Add_Command ("ping", Ping_Commands'Access);
    end Initialize;
 
    --  ------------------------------
@@ -113,5 +120,41 @@ package body Druss.Commands is
          Console.Print_Field (Field, "");
       end if;
    end Print_On_Off;
+
+   function Uptime_Image (Value : in Natural) return String is
+      D : constant Natural := Value / 86400;
+      R : constant Natural := Value mod 86400;
+      H : constant Natural := R / 3600;
+      M : constant Natural := (R mod 3600) / 60;
+      S : constant Natural := (R mod 3600) mod 60;
+   begin
+      if D > 0 then
+         return Util.Strings.Image (D) & "d"
+           & (if H > 0 then Natural'Image (H) & "h" else "")
+           & (if M > 0 then Natural'Image (M) & "m" else "");
+      elsif H > 0 then
+         return Util.Strings.Image (H) & "h"
+           & (if M > 0 then Natural'Image (M) & "m" else "");
+      else
+         return Util.Strings.Image (M) & "m"
+           & Natural'Image (S) & "s";
+      end if;
+   end Uptime_Image;
+
+   --  Print a uptime.
+   procedure Print_Uptime (Console : in Consoles.Console_Access;
+                           Field   : in Field_Type;
+                           Value   : in String) is
+   begin
+      if Value = "" then
+         Console.Print_Field (Field, Value);
+      else
+         Console.Print_Field (Field, Uptime_Image (Natural'Value (Value)));
+      end if;
+
+   exception
+      when others =>
+            Console.Print_Field (Field, Value);
+   end Print_Uptime;
 
 end Druss.Commands;
