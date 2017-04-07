@@ -16,6 +16,7 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 with Ada.Strings.Unbounded;
+with Ada.Calendar;
 with Util.Properties;
 with Util.Http.Clients;
 package Bbox.API is
@@ -40,9 +41,20 @@ package Bbox.API is
                   Operation : in String;
                   Params    : in String);
 
+   --  Execute a POST operation on the Bbox API to change some parameter.
+   procedure Post (Client    : in out Client_Type;
+                   Operation : in String;
+                   Params    : in String);
+
    --  Execute a GET operation on the Bbox API to retrieve the JSON result and return it.
    function Get (Client    : in out Client_Type;
                  Operation : in String) return String;
+
+   --  Iterate over a JSON array flattened in the properties.
+   procedure Iterate (Props : in Util.Properties.Manager;
+                      Name  : in String;
+                      Process : access procedure (P : in Util.Properties.Manager;
+                                                  Base : in String));
 
 private
 
@@ -51,10 +63,15 @@ private
                      Operation : in String) return String;
 
    type Client_Type is tagged limited record
-      Password : Ada.Strings.Unbounded.Unbounded_String;
-      Server   : Ada.Strings.Unbounded.Unbounded_String;
-      Auth     : Ada.Strings.Unbounded.Unbounded_String;
-      Http     : Util.Http.Clients.Client;
+      Password  : Ada.Strings.Unbounded.Unbounded_String;
+      Server    : Ada.Strings.Unbounded.Unbounded_String;
+      Auth      : Ada.Strings.Unbounded.Unbounded_String;
+      Is_Logged : Boolean := False;
+      Http      : Util.Http.Clients.Client;
+      Token     : Ada.Strings.Unbounded.Unbounded_String;
+      Expires   : Ada.Calendar.Time;
    end record;
+
+   procedure Refresh_Token (Client : in out Client_Type);
 
 end Bbox.API;
