@@ -18,9 +18,13 @@
 with Util.Properties.JSON;
 with Util.Log.Loggers;
 with Util.Strings;
+with Util.Properties.Basic;
 package body Bbox.API is
 
    use Ada.Strings.Unbounded;
+
+   package Int_Property renames Util.Properties.Basic.Integer_Property;
+   package Bool_Property renames Util.Properties.Basic.Boolean_Property;
 
    --  The logger
    Log : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Bbox.API");
@@ -69,12 +73,16 @@ package body Bbox.API is
                return;
             end if;
             Client.Http.Set_Header ("Cookie", Value (Value'First .. Last - 1));
+            Client.Is_Logged := True;
          end if;
       end Process;
 
    begin
       Log.Debug ("Login to {0}", URI);
+      Client.Is_Logged := False;
+      Client.Http.Set_Header ("Cookie", "");
       Client.Http.Add_Header ("X-Requested-By", "Bbox Ada Api");
+      Client.Http.Set_Timeout (10.0);
       Client.Http.Post (URI, "password=" & Password, Response);
       if Response.Get_Status = Util.Http.SC_OK then
          Response.Iterate_Headers (Process'Access);
@@ -111,6 +119,7 @@ package body Bbox.API is
       Response : Util.Http.Clients.Response;
    begin
       Log.Debug ("Get {0}", URI);
+      Client.Http.Set_Timeout (10.0);
       Client.Http.Get (URI, Response);
       Util.Properties.JSON.Parse_JSON (Result, Strip_Unecessary_Array (Response.Get_Body));
    end Get;
@@ -124,6 +133,7 @@ package body Bbox.API is
       Response : Util.Http.Clients.Response;
    begin
       Log.Debug ("Get {0}", URI);
+      Client.Http.Set_Timeout (10.0);
       Client.Http.Get (URI, Response);
       return Response.Get_Body;
    end Get;
@@ -138,7 +148,55 @@ package body Bbox.API is
       Response : Util.Http.Clients.Response;
    begin
       Log.Debug ("Put {0}", URI);
+      Client.Http.Set_Timeout (10.0);
       Client.Http.Put (URI, Params, Response);
    end Put;
+
+   procedure Refresh_Token (Client : in out Client_Type) is
+      use type Ada.Calendar.Time;
+
+      Now      : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+      Response : Util.Http.Clients.Response;
+      Tokens   : Util.Properties.Manager;
+   begin
+      if Length (Client.Token) /= 0 and then Client.Expires > Now then
+         return;
+      end if;
+      Log.Debug ("Get bbox token");
+      Client.Http.Set_Timeout (10.0);
+      Client.Http.Get (Client.Get_URI ("device/token"), Response);
+      Util.Properties.JSON.Parse_JSON (Tokens, Strip_Unecessary_Array (Response.Get_Body));
+      Client.Token := To_Unbounded_String (Tokens.Get ("device.token", ""));
+      Client.Expires := Ada.Calendar.Clock + 60.0;
+   end Refresh_Token;
+
+   --  Execute a POST operation on the Bbox API to change some parameter.
+   procedure Post (Client    : in out Client_Type;
+                   Operation : in String;
+                   Params    : in String) is
+      URI      : constant String := Client.Get_URI (Operation);
+      Response : Util.Http.Clients.Response;
+   begin
+      Log.Debug ("Post {0}", URI);
+      Client.Refresh_Token;
+      Client.Http.Set_Timeout (10.0);
+      Client.Http.Post (URI & "?btoken=" & To_String (Client.Token), Params, Response);
+   end Post;
+
+   --  Iterate over a JSON array flattened in the properties.
+   procedure Iterate (Props : in Util.Properties.Manager;
+                      Name  : in String;
+                      Process : access procedure (P : in Util.Properties.Manager;
+                                                  Base : in String)) is
+      Count : constant Integer := Int_Property.Get (Props, Name & ".length", 0);
+   begin
+      for I in 0 .. Count loop
+         declare
+            Base : constant String := Name & "." & Util.Strings.Image (I);
+         begin
+            Process (Props, Base);
+         end;
+      end loop;
+   end Iterate;
 
 end Bbox.API;
