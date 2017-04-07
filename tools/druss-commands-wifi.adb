@@ -59,11 +59,12 @@ package body Druss.Commands.Wifi is
          Gateway.Refresh;
          Console.Start_Row;
          Console.Print_Field (F_IP_ADDR, Gateway.Ip);
-         Console.Print_Field (F_BOOL, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
+         Print_On_Off (Console, F_BOOL, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
          Console.Print_Field (F_CHANNEL, Gateway.Wifi.Get ("wireless.radio.24.current_channel", " "));
          Console.Print_Field (F_SSID, Gateway.Wifi.Get ("wireless.ssid.24.id", " "));
          Console.Print_Field (F_PROTOCOL, Gateway.Wifi.Get ("wireless.ssid.24.security.protocol", " "));
          Console.Print_Field (F_ENCRYPTION, Gateway.Wifi.Get ("wireless.ssid.24.security.encryption", " "));
+         Console.Print_Field (F_DEVICES, Gateway.Hosts.Get ("hosts.list.length", ""));
          Console.End_Row;
 
          if not Gateway.Wifi.Exists ("wireless.radio.5.enable") then
@@ -71,7 +72,7 @@ package body Druss.Commands.Wifi is
          end if;
          Console.Start_Row;
          Console.Print_Field (F_IP_ADDR, To_String (Gateway.Ip));
-         Console.Print_Field (F_BOOL, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
+         Print_On_Off (Console, F_BOOL, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
          Console.Print_Field (F_CHANNEL, Gateway.Wifi.Get ("wireless.radio.5.current_channel", " "));
          Console.Print_Field (F_SSID, Gateway.Wifi.Get ("wireless.ssid.5.id", " "));
          Console.Print_Field (F_PROTOCOL, Gateway.Wifi.Get ("wireless.ssid.5.security.protocol", " "));
@@ -87,8 +88,9 @@ package body Druss.Commands.Wifi is
       Console.Print_Title (F_SSID, "SSID", 20);
       Console.Print_Title (F_PROTOCOL, "Protocol", 12);
       Console.Print_Title (F_ENCRYPTION, "Encryption", 12);
+      Console.Print_Title (F_DEVICES, "Devices", 12);
       Console.End_Title;
-      Druss.Gateways.Iterate (Context.Gateways, Wifi_Status'Access);
+      Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Wifi_Status'Access);
    end Do_Status;
 
    --  ------------------------------
