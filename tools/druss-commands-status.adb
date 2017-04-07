@@ -41,23 +41,25 @@ package body Druss.Commands.Status is
          Console.Print_Field (F_IP_ADDR, Gateway.Ip);
          Console.Print_Field (F_WAN_IP, Gateway.Wan.Get ("wan.ip.address", " "));
          Print_Status (Console, F_INTERNET, Gateway.Wan.Get ("wan.internet.state", " "));
-         Console.Print_Field (F_VOIP, Gateway.Voip.Get ("voip.status", " "));
+         Console.Print_Field (F_VOIP, Gateway.Voip.Get ("voip.0.status", " "));
          Print_On_Off (Console, F_WIFI, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
          if not Gateway.Wifi.Exists ("wireless.radio.5.enable") then
             Console.Print_Field (F_WIFI5, "");
          else
             Print_On_Off (Console, F_WIFI5, Gateway.Wifi.Get ("wireless.radio.5.enable", " "));
          end if;
-         Console.Print_Field (F_ACCESS_CONTROL, Gateway.IPtv.Get ("iptv.0.address", "x"));
+         Console.Print_Field (F_ACCESS_CONTROL, Gateway.IPtv.Get ("iptv.length", "x"));
+         Console.Print_Field (F_DEVICES, Gateway.Hosts.Get ("hosts.list.length", ""));
+         Print_Uptime (Console, F_UPTIME, Gateway.Device.Get ("device.uptime", ""));
          Console.End_Row;
          N := N + 1;
-         Gateway.IPtv.Save_Properties ("iptv" & Util.Strings.Image (N) & ".properties");
+         Gateway.Hosts.Save_Properties ("sum-" & Util.Strings.Image (N) & ".properties");
       end Box_Status;
 
    begin
       Console.Start_Title;
-      Console.Print_Title (F_IP_ADDR, "LAN IP", 15);
-      Console.Print_Title (F_WAN_IP, "WAN IP", 15);
+      Console.Print_Title (F_IP_ADDR, "LAN IP", 16);
+      Console.Print_Title (F_WAN_IP, "WAN IP", 16);
       Console.Print_Title (F_INTERNET, "Internet", 9);
       Console.Print_Title (F_VOIP, "VoIP", 6);
       Console.Print_Title (F_WIFI, "Wifi 2.4G", 10);
@@ -65,8 +67,9 @@ package body Druss.Commands.Status is
       Console.Print_Title (F_ACCESS_CONTROL, "Parental", 10);
       Console.Print_Title (F_DYNDNS, "DynDNS", 10);
       Console.Print_Title (F_DEVICES, "Devices", 12);
+      Console.Print_Title (F_UPTIME, "Uptime", 12);
       Console.End_Title;
-      Druss.Gateways.Iterate (Context.Gateways, Box_Status'Access);
+      Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Box_Status'Access);
    end Do_Status;
 
    --  Execute a status command to report information about the Bbox.
