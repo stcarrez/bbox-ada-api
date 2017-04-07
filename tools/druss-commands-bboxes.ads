@@ -28,6 +28,12 @@ package Druss.Commands.Bboxes is
                        IP      : in String;
                        Context : in out Context_Type);
 
+   --  Enable or disable the bbox management by Druss.
+   procedure Do_Enable (Command   : in Command_Type;
+                        Args      : in Util.Commands.Argument_List'Class;
+                        State     : in Boolean;
+                        Context   : in out Context_Type);
+
    --  Execute the command with the arguments.  The command name is passed with the command
    --  arguments.
    overriding
