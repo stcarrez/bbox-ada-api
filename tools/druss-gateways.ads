@@ -48,6 +48,9 @@ package Druss.Gateways is
       --  Directory that contains the images.
       Images : Ada.Strings.Unbounded.Unbounded_String;
 
+      --  Whether the gateway entry is enabled or not.
+      Enable : Boolean := True;
+
       --  The gateway state.
       State  : Gateway_State;
 
@@ -65,6 +68,9 @@ package Druss.Gateways is
 
       --  IPtv information (From api/v1/iptv).
       IPtv   : Util.Properties.Manager;
+
+      --  Hosts information (From api/v1/hosts).
+      Hosts  : Util.Properties.Manager;
 
       --  Current Device information (from api/v1/device).
       Device : Util.Properties.Manager;
@@ -112,8 +118,11 @@ package Druss.Gateways is
    procedure Refresh (Gateway : in Gateway_Ref)
      with pre => not Gateway.Is_Null;
 
+   type Iterate_Type is (ITER_ALL, ITER_ENABLE, ITER_DISABLE);
+
    --  Iterate over the list of gateways and execute the <tt>Process</tt> procedure.
    procedure Iterate (List    : in Gateway_Vector;
+                      Mode    : in Iterate_Type := ITER_ALL;
                       Process : not null access procedure (G : in out Gateway_Type));
 
    --  Find the gateway with the given IP address.
