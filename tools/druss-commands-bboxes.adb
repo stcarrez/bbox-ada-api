@@ -145,6 +145,24 @@ package body Druss.Commands.Bboxes is
    end Password;
 
    --  ------------------------------
+   --  Enable or disable the bbox management by Druss.
+   --  ------------------------------
+   procedure Do_Enable (Command   : in Command_Type;
+                        Args      : in Util.Commands.Argument_List'Class;
+                        State     : in Boolean;
+                        Context   : in out Context_Type) is
+      procedure Change_Enable (Gateway : in out Druss.Gateways.Gateway_Type;
+                               Command : in String) is
+      begin
+         Gateway.Enable := State;
+      end Change_Enable;
+
+   begin
+      Druss.Commands.Gateway_Command (Command, Args, 1, Change_Enable'Access, Context);
+      Druss.Config.Save_Gateways (Context.Gateways);
+   end Do_Enable;
+
+   --  ------------------------------
    --  Execute the command with the arguments.  The command name is passed with the command
    --  arguments.
    --  ------------------------------
@@ -160,6 +178,10 @@ package body Druss.Commands.Bboxes is
          Command.Discover (Context);
       elsif Args.Get_Argument (1) = "password" then
          Command.Password (Args, Context);
+      elsif Args.Get_Argument (1) = "enable" then
+         Command.Do_Enable (Args, True, Context);
+      elsif Args.Get_Argument (1) = "disable" then
+         Command.Do_Enable (Args, False, Context);
       else
          Put_Line ("Invalid sub-command: " & Args.Get_Argument (1));
          Druss.Commands.Driver.Usage (Args);
@@ -183,6 +205,8 @@ package body Druss.Commands.Bboxes is
       Put_Line ("    bbox discover               Discover the bbox(es) connected to the LAN");
       Put_Line ("    bbox add IP                 Add a bbox knowing its IP address");
       Put_Line ("    bbox del IP                 Delete a bbox from the list");
+      Put_Line ("    bbox enable IP              Enable the bbox (it will be managed by Druss)");
+      Put_Line ("    bbox disable IP             Disable the bbox (it will not be managed)");
       Put_Line ("    bbox password <pass> [IP]   Set the bbox API connection password");
    end Help;
 
