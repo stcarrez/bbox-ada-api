@@ -80,7 +80,7 @@ package body Druss.Commands.Get is
          if Args.Get_Count > 1 or else Context.Gateways.Length > 1 then
             Ada.Text_IO.Put_Line ("[");
          end if;
-         Druss.Gateways.Iterate (Context.Gateways, Execute_One'Access);
+         Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Execute_One'Access);
          if Args.Get_Count > 1 or else Context.Gateways.Length > 1 then
             Ada.Text_IO.Put_Line ("]");
          end if;
