@@ -74,7 +74,7 @@ package body Druss.Commands.Ping is
             Console.Print_Field (F_BBOX_IP_ADDR, Gateway.Ip);
             Console.Print_Field (F_IP_ADDR, Manager.Get (Name & ".ipaddress", ""));
             Console.Print_Field (F_HOSTNAME, Manager.Get (Name & ".hostname", ""));
-            Console.Print_Field (F_ACTIVE, Manager.Get (Name & ".ping.average", ""));
+            Print_Perf (Console, F_ACTIVE, Manager.Get (Name & ".ping.average", ""));
             if Link = "Ethernet" then
                Console.Print_Field (F_LINK, Link & " port "
                                     & Manager.Get (Name & ".ethernet.logicalport", ""));
@@ -98,7 +98,7 @@ package body Druss.Commands.Ping is
       Console.Print_Title (F_BBOX_IP_ADDR, "Bbox IP", 16);
       Console.Print_Title (F_IP_ADDR, "Device IP", 16);
       Console.Print_Title (F_HOSTNAME, "Hostname", 28);
-      Console.Print_Title (F_ACTIVE, "Ping", 8);
+      Console.Print_Title (F_ACTIVE, "Ping", 15);
       Console.Print_Title (F_LINK, "Link", 18);
       Console.End_Title;
       Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Box_Status'Access);
