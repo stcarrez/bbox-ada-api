@@ -31,6 +31,9 @@ package body Druss.Commands is
    Log : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Druss.Commands");
 
    function Uptime_Image (Value : in Natural) return String;
+   procedure Quit (Name    : in String;
+                   Args    : in Argument_List'Class;
+                   Context : in out Context_Type);
 
    Help_Command    : aliased Druss.Commands.Drivers.Help_Command_Type;
    Bbox_Commands   : aliased Druss.Commands.Bboxes.Command_Type;
@@ -97,6 +100,17 @@ package body Druss.Commands is
    end Initialize;
 
    --  ------------------------------
+   --  Quit the interactive loop.
+   --  ------------------------------
+   procedure Quit (Name    : in String;
+                   Args    : in Argument_List'Class;
+                   Context : in out Context_Type) is
+      pragma Unreferenced (Name, Args, Context);
+   begin
+      raise Stop_Interactive;
+   end Quit;
+
+   --  ------------------------------
    --  Enter in the interactive main loop waiting for user commands and executing them.
    --  ------------------------------
    procedure Interactive (Context : in out Context_Type) is
@@ -104,6 +118,7 @@ package body Druss.Commands is
                                                  Max_Args   => 100);
    begin
       Log.Debug ("Entering in interactive mode");
+      Driver.Add_Command (Name => "quit", Handler => Quit'Access);
       loop
          declare
             Line : constant String := Readline.Get_Line ("druss>");
@@ -113,6 +128,10 @@ package body Druss.Commands is
             Driver.Execute (Args.Get_Command_Name, Args, Context);
 
          exception
+            when Stop_Interactive =>
+               Log.Debug ("Leaving interactive mode");
+               exit;
+
             when others =>
                Context.Console.Notice (N_INFO, "Command failed");
          end;
