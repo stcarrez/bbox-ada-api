@@ -31,14 +31,16 @@ procedure Druss.Tools is
    use Ada.Text_IO;
    use Ada.Strings.Unbounded;
 
-   Log_Config : Util.Properties.Manager;
-   Config     : Ada.Strings.Unbounded.Unbounded_String;
-   Output     : Ada.Strings.Unbounded.Unbounded_String;
-   Debug      : Boolean := False;
-   Verbose    : Boolean := False;
-   First      : Natural := 0;
-   All_Args   : Util.Commands.Default_Argument_List (0);
-   Console    : aliased Druss.Commands.Text_Consoles.Console_Type;
+   Log_Config  : Util.Properties.Manager;
+   Config      : Ada.Strings.Unbounded.Unbounded_String;
+   Output      : Ada.Strings.Unbounded.Unbounded_String;
+   Debug       : Boolean := False;
+   Verbose     : Boolean := False;
+   Interactive : Boolean := False;
+   First       : Natural := 0;
+   All_Args    : Util.Commands.Default_Argument_List (0);
+   Console     : aliased Druss.Commands.Text_Consoles.Console_Type;
+   Ctx         : Druss.Commands.Context_Type;
 begin
    Log_Config.Set ("log4j.rootCategory", "DEBUG,console");
    Log_Config.Set ("log4j.appender.console", "Console");
@@ -52,10 +54,11 @@ begin
 
    Util.Log.Loggers.Initialize (Log_Config);
    Druss.Commands.Initialize;
+   Ctx.Console := Console'Unchecked_Access;
    Initialize_Option_Scan (Stop_At_First_Non_Switch => True, Section_Delimiters => "targs");
    --  Parse the command line
    loop
-      case Getopt ("* v d o: c:") is
+      case Getopt ("* v d i o: c:") is
          when ASCII.NUL => exit;
 
          when 'c' =>
@@ -66,6 +69,9 @@ begin
 
          when 'd' =>
             Debug := True;
+
+         when 'i' =>
+            Interactive := True;
 
          when 'v' =>
             Verbose := True;
@@ -89,6 +95,13 @@ begin
    Util.Log.Loggers.Initialize (Log_Config);
    Druss.Config.Initialize (To_String (Config));
    Util.Http.Clients.Curl.Register;
+
+   --  Enter in the interactive mode.
+   if Interactive then
+      Druss.Config.Get_Gateways (Ctx.Gateways);
+      Druss.Commands.Interactive (Ctx);
+      return;
+   end if;
    if First >= Ada.Command_Line.Argument_Count then
       Ada.Text_IO.Put_Line ("Missing command name to execute.");
       Druss.Commands.Driver.Usage (All_Args);
@@ -98,9 +111,7 @@ begin
    declare
       Cmd_Name : constant String := Full_Switch;
       Args     : Util.Commands.Default_Argument_List (First + 1);
-      Ctx      : Druss.Commands.Context_Type;
    begin
-      Ctx.Console := Console'Unchecked_Access;
       Druss.Config.Get_Gateways (Ctx.Gateways);
       Druss.Commands.Driver.Execute (Cmd_Name, Args, Ctx);
    end;
