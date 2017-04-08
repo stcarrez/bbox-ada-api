@@ -24,6 +24,8 @@ with Druss.Commands.Devices;
 with Druss.Commands.Ping;
 package body Druss.Commands is
 
+   function Uptime_Image (Value : in Natural) return String;
+
    Help_Command    : aliased Druss.Commands.Drivers.Help_Command_Type;
    Bbox_Commands   : aliased Druss.Commands.Bboxes.Command_Type;
    Get_Commands    : aliased Druss.Commands.Get.Command_Type;
@@ -38,13 +40,15 @@ package body Druss.Commands is
                               Process   : access procedure (Gateway : in out Gateways.Gateway_Type;
                                                             Param   : in String);
                               Context   : in out Context_Type) is
-
+      pragma Unreferenced (Command);
    begin
       if Args.Get_Count < Arg_Pos then
          Context.Console.Notice (N_USAGE, "Missing argument for command");
          Druss.Commands.Driver.Usage (Args);
       end if;
       declare
+         procedure Operation (Gateway : in out Druss.Gateways.Gateway_Type);
+
          Param  : constant String := Args.Get_Argument (Arg_Pos);
          Gw     : Druss.Gateways.Gateway_Ref;
 
