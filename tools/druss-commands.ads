@@ -22,6 +22,9 @@ with Util.Commands.Consoles.Text;
 with Druss.Gateways;
 package Druss.Commands is
 
+   --  Exception raised to stop the interactive loop.
+   Stop_Interactive : exception;
+
    --  Device selector to select all, active or inactive devices.
    type Device_Selector_Type is (DEVICE_ALL, DEVICE_ACTIVE, DEVICE_INACTIVE);
 
