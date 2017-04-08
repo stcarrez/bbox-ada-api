@@ -32,22 +32,39 @@ package body Druss.Commands.Ping is
    --  ------------------------------
    procedure Do_Ping (Command   : in Command_Type;
                       Args      : in Argument_List'Class;
+                      Selector  : in Device_Selector_Type;
                       Context   : in out Context_Type) is
-      pragma Unreferenced (Command);
+      pragma Unreferenced (Command, Args);
+      procedure Do_Ping (Gateway : in out Druss.Gateways.Gateway_Type);
+      procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type);
 
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
 
       procedure Do_Ping (Gateway : in out Druss.Gateways.Gateway_Type) is
+         procedure Ping_Device (Manager : in Util.Properties.Manager;
+                                Name    : in String);
+
          Box  : Bbox.API.Client_Type;
 
          procedure Ping_Device (Manager : in Util.Properties.Manager;
                                 Name    : in String) is
-            Link : constant String := Manager.Get (Name & ".link", "");
             Id   : constant String := Manager.Get (Name & ".id", "");
          begin
---              if Manager.Get (Name & ".active", "") = "0" then
---                 return;
---              end if;
+            case Selector is
+               when DEVICE_ALL =>
+                  null;
+
+               when DEVICE_ACTIVE =>
+                  if Manager.Get (Name & ".active", "") = "0" then
+                     return;
+                  end if;
+
+               when DEVICE_INACTIVE =>
+                  if Manager.Get (Name & ".active", "") = "1" then
+                     return;
+                  end if;
+
+            end case;
             Log.Info ("Ping command on {0}", Manager.Get (Name & ".ipaddress", ""));
             Box.Post ("hosts/" & Id, "action=ping");
          end Ping_Device;
@@ -57,7 +74,7 @@ package body Druss.Commands.Ping is
             return;
          end if;
          Gateway.Refresh;
-         Box.Set_Server (To_String (Gateway.IP));
+         Box.Set_Server (To_String (Gateway.Ip));
          Box.Login (To_String (Gateway.Passwd));
 
          Bbox.API.Iterate (Gateway.Hosts, "hosts.list", Ping_Device'Access);
@@ -70,7 +87,6 @@ package body Druss.Commands.Ping is
          procedure Print_Device (Manager : in Util.Properties.Manager;
                                  Name    : in String) is
             Link : constant String := Manager.Get (Name & ".link", "");
-            Kind : constant String := Manager.Get (Name & ".devicetype", "");
          begin
             if Manager.Get (Name & ".active", "") = "0" then
                return;
@@ -119,7 +135,21 @@ package body Druss.Commands.Ping is
                       Context   : in out Context_Type) is
       pragma Unreferenced (Name);
    begin
-      Command.Do_Ping (Args, Context);
+      if Args.Get_Count > 1 then
+         Context.Console.Notice (N_USAGE, "Too many arguments to the command");
+         Druss.Commands.Driver.Usage (Args);
+      elsif Args.Get_Count = 0 then
+         Command.Do_Ping (Args, DEVICE_ALL, Context);
+      elsif Args.Get_Argument (1) = "all" then
+         Command.Do_Ping (Args, DEVICE_ALL, Context);
+      elsif Args.Get_Argument (1) = "active" then
+         Command.Do_Ping (Args, DEVICE_ACTIVE, Context);
+      elsif Args.Get_Argument (1) = "inactive" then
+         Command.Do_Ping (Args, DEVICE_INACTIVE, Context);
+      else
+         Context.Console.Notice (N_USAGE, "Invalid argument: " & Args.Get_Argument (1));
+         Druss.Commands.Driver.Usage (Args);
+      end if;
    end Execute;
 
    --  ------------------------------
@@ -132,10 +162,16 @@ package body Druss.Commands.Ping is
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
       Console.Notice (N_HELP, "ping: Ask the Bbox to ping the devices");
-      Console.Notice (N_HELP, "Usage: ping {active | inactive}");
+      Console.Notice (N_HELP, "Usage: ping [all | active | inactive]");
       Console.Notice (N_HELP, "");
-      Console.Notice (N_HELP, "  active     Ping the active devices only");
-      Console.Notice (N_HELP, "  inative    Ping the inactive devices only");
+      Console.Notice (N_HELP, "  Ask the Bbox to ping the devices.  By default it will ping");
+      Console.Notice (N_HELP, "  all the devices that have been discovered by the Bbox.");
+      Console.Notice (N_HELP, "  The command will wait 5 seconds and it will list the active");
+      Console.Notice (N_HELP, "  devices with their ping performance.");
+      Console.Notice (N_HELP, "");
+      Console.Notice (N_HELP, "    all        Ping all the devices");
+      Console.Notice (N_HELP, "    active     Ping the active devices only");
+      Console.Notice (N_HELP, "    inative    Ping the inactive devices only");
    end Help;
 
 end Druss.Commands.Ping;
