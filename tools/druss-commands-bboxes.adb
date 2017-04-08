@@ -15,7 +15,6 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
-with Ada.Text_IO;
 with Ada.Streams;
 with Ada.Strings.Unbounded;
 with Util.Log.Loggers;
@@ -29,32 +28,20 @@ with UPnP.SSDP;
 package body Druss.Commands.Bboxes is
 
    use Ada.Strings.Unbounded;
-   use Ada.Text_IO;
    use type Ada.Streams.Stream_Element_Offset;
    use type Ada.Streams.Stream_Element;
 
    --  The logger
    Log : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Druss.Commands.Bboxes");
 
-   procedure Discover (IP : in String) is
-      Box  : Bbox.API.Client_Type;
-      Info : Util.Properties.Manager;
-   begin
-      Box.Set_Server (IP);
-      Box.Get ("device", Info);
-      if Info.Get ("device.modelname", "") /= "" then
-         Log.Info ("Found a bbox at {0}", IP);
-      end if;
-
-   exception
-      when E : others =>
-         null;
-   end Discover;
-
+   --  ------------------------------
    --  Add the bbox with the given IP address.
+   --  ------------------------------
    procedure Add_Bbox (Command : in Command_Type;
                        IP      : in String;
                        Context : in out Context_Type) is
+      pragma Unreferenced (Command);
+
       Box  : Bbox.API.Client_Type;
       Info : Util.Properties.Manager;
       Gw   : Druss.Gateways.Gateway_Ref := Druss.Gateways.Find_IP (Context.Gateways, IP);
@@ -66,37 +53,24 @@ package body Druss.Commands.Bboxes is
       Box.Set_Server (IP);
       Box.Get ("device", Info);
       if Info.Get ("device.modelname", "") /= "" then
-         Log.Info ("Found a new bbox at {0}", IP);
+         Context.Console.Notice (N_INFO, "Found a new bbox at " & IP);
          Gw := Druss.Gateways.Gateway_Refs.Create;
-         Gw.Value.IP := Ada.Strings.Unbounded.To_Unbounded_String (IP);
+         Gw.Value.Ip := Ada.Strings.Unbounded.To_Unbounded_String (IP);
          Context.Gateways.Append (Gw);
       end if;
 
    exception
-      when E : others =>
-         null;
+      when others =>
+         Log.Debug ("Ignoring IP {0} because some exception happened", IP);
    end Add_Bbox;
 
    procedure Discover (Command   : in Command_Type;
                        Context   : in out Context_Type) is
+      procedure Process (URI : in String);
+
       Retry        : Natural := 0;
       Scanner      : UPnP.SSDP.Scanner_Type;
       Itf_IPs      : Util.Strings.Sets.Set;
-
-      procedure Check_Bbox (IP : in String) is
-         Box  : Bbox.API.Client_Type;
-         Info : Util.Properties.Manager;
-      begin
-         Box.Set_Server (IP);
-         Box.Get ("device", Info);
-         if Info.Get ("device.modelname", "") /= "" then
-            Log.Info ("Found a bbox at {0}", IP);
-         end if;
-
-      exception
-         when E : others =>
-            null;
-      end Check_Bbox;
 
       procedure Process (URI : in String) is
          Pos : Natural;
@@ -107,7 +81,6 @@ package body Druss.Commands.Bboxes is
          Pos := Util.Strings.Index (URI, ':', 6);
          if Pos > 0 then
             Command.Add_Bbox (URI (URI'First + 7 .. Pos - 1), Context);
-            --  Check_Bbox ();
          end if;
       end Process;
 
@@ -129,9 +102,11 @@ package body Druss.Commands.Bboxes is
    --  ------------------------------
    --  Set the password to be used by the Bbox API to connect to the box.
    --  ------------------------------
-   procedure Password (Command   : in Command_Type;
-                       Args      : in Util.Commands.Argument_List'Class;
-                       Context   : in out Context_Type) is
+   procedure Do_Password (Command   : in Command_Type;
+                          Args      : in Util.Commands.Argument_List'Class;
+                          Context   : in out Context_Type) is
+      procedure Change_Password (Gateway : in out Druss.Gateways.Gateway_Type;
+                                 Passwd  : in String);
 
       procedure Change_Password (Gateway : in out Druss.Gateways.Gateway_Type;
                                  Passwd  : in String) is
@@ -142,19 +117,21 @@ package body Druss.Commands.Bboxes is
    begin
       Druss.Commands.Gateway_Command (Command, Args, 2, Change_Password'Access, Context);
       Druss.Config.Save_Gateways (Context.Gateways);
-   end Password;
+   end Do_Password;
 
    --  ------------------------------
    --  Enable or disable the bbox management by Druss.
    --  ------------------------------
    procedure Do_Enable (Command   : in Command_Type;
                         Args      : in Util.Commands.Argument_List'Class;
-                        State     : in Boolean;
                         Context   : in out Context_Type) is
+      procedure Change_Enable (Gateway : in out Druss.Gateways.Gateway_Type;
+                               Command : in String);
+
       procedure Change_Enable (Gateway : in out Druss.Gateways.Gateway_Type;
                                Command : in String) is
       begin
-         Gateway.Enable := State;
+         Gateway.Enable := Command = "enable";
       end Change_Enable;
 
    begin
@@ -171,19 +148,18 @@ package body Druss.Commands.Bboxes is
                       Name      : in String;
                       Args      : in Util.Commands.Argument_List'Class;
                       Context   : in out Context_Type) is
+      pragma Unreferenced (Name);
    begin
       if Args.Get_Count = 0 then
          Druss.Commands.Driver.Usage (Args);
       elsif Args.Get_Argument (1) = "discover" then
          Command.Discover (Context);
       elsif Args.Get_Argument (1) = "password" then
-         Command.Password (Args, Context);
-      elsif Args.Get_Argument (1) = "enable" then
-         Command.Do_Enable (Args, True, Context);
-      elsif Args.Get_Argument (1) = "disable" then
-         Command.Do_Enable (Args, False, Context);
+         Command.Do_Password (Args, Context);
+      elsif Args.Get_Argument (1) in "enable" | "disable" then
+         Command.Do_Enable (Args, Context);
       else
-         Put_Line ("Invalid sub-command: " & Args.Get_Argument (1));
+         Context.Console.Notice (N_USAGE, "Invalid sub-command: " & Args.Get_Argument (1));
          Druss.Commands.Driver.Usage (Args);
       end if;
    end Execute;
@@ -194,20 +170,38 @@ package body Druss.Commands.Bboxes is
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
+      pragma Unreferenced (Command);
+
+      Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
-      Put_Line ("bbox: Manage and define the configuration to connect to the Bbox");
-      Put_Line ("Usage: bbox <operation>...");
-      New_Line;
-      Put_Line ("  Druss needs to know the list of Bboxes which are available on the network.");
-      Put_Line ("  It also need some credentials to connect to the Bbox using the Bbox API.");
-      Put_Line ("  The 'bbox' command allows to manage that list and configuration.");
-      Put_Line ("  Examples:");
-      Put_Line ("    bbox discover               Discover the bbox(es) connected to the LAN");
-      Put_Line ("    bbox add IP                 Add a bbox knowing its IP address");
-      Put_Line ("    bbox del IP                 Delete a bbox from the list");
-      Put_Line ("    bbox enable IP              Enable the bbox (it will be managed by Druss)");
-      Put_Line ("    bbox disable IP             Disable the bbox (it will not be managed)");
-      Put_Line ("    bbox password <pass> [IP]   Set the bbox API connection password");
+      Console.Notice (N_HELP,
+                      "bbox: Manage and define the configuration to connect to the Bbox");
+      Console.Notice (N_HELP,
+                      "Usage: bbox <operation>...");
+      Console.Notice (N_HELP,
+                      "");
+      Console.Notice (N_HELP,
+                      "  Druss needs to know the list of Bboxes which are available"
+                      & " on the network.");
+      Console.Notice (N_HELP,
+                      "  It also need some credentials to connect to the Bbox using"
+                      & " the Bbox API.");
+      Console.Notice (N_HELP,
+                      "  The 'bbox' command allows to manage that list and configuration.");
+      Console.Notice (N_HELP,
+                      "  Examples:");
+      Console.Notice (N_HELP,
+                      "    bbox discover              Discover the bbox(es) connected to the LAN");
+      Console.Notice (N_HELP,
+                      "    bbox add IP                Add a bbox knowing its IP address");
+      Console.Notice (N_HELP,
+                      "    bbox del IP                Delete a bbox from the list");
+      Console.Notice (N_HELP,
+                      "    bbox enable IP             Enable the bbox (it will be used by Druss)");
+      Console.Notice (N_HELP,
+                      "    bbox disable IP            Disable the bbox (it will not be managed)");
+      Console.Notice (N_HELP,
+                      "    bbox password <pass> [IP]  Set the bbox API connection password");
    end Help;
 
 end Druss.Commands.Bboxes;
