@@ -83,10 +83,11 @@ package body Druss.Commands is
    procedure Initialize is
    begin
       Driver.Set_Description ("Druss - The Bbox master controller");
-      Driver.Set_Usage ("[-v] [-d] [-o file] [-c config] <command> [<args>]" & ASCII.LF &
+      Driver.Set_Usage ("[-v] [-d] [-i] [-o file] [-c config] <command> [<args>]" & ASCII.LF &
                           "where:" & ASCII.LF &
                           "  -v         Verbose execution mode" & ASCII.LF &
                           "  -d         Debug execution mode" & ASCII.LF &
+                          "  -i         Enter the interactive mode" & ASCII.LF &
                           "  -c config  Use the configuration file" &
                           " (instead of $HOME/.config/druss/druss.properties)" & ASCII.LF &
                           "  -o file    The output file to use");
