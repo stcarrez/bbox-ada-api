@@ -26,11 +26,14 @@ package body Druss.Commands.Devices is
    procedure Do_List (Command   : in Command_Type;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is
-      pragma Unreferenced (Command);
+      pragma Unreferenced (Command, Args);
+      procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type);
 
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
 
       procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
+         procedure Print_Device (Manager : in Util.Properties.Manager;
+                                 Name    : in String);
 
          procedure Print_Device (Manager : in Util.Properties.Manager;
                                  Name    : in String) is
@@ -76,7 +79,9 @@ package body Druss.Commands.Devices is
       Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Box_Status'Access);
    end Do_List;
 
+   --  ------------------------------
    --  Execute a status command to report information about the Bbox.
+   --  ------------------------------
    overriding
    procedure Execute (Command   : in Command_Type;
                       Name      : in String;
@@ -87,7 +92,9 @@ package body Druss.Commands.Devices is
       Command.Do_List (Args, Context);
    end Execute;
 
+   --  ------------------------------
    --  Write the help associated with the command.
+   --  ------------------------------
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
