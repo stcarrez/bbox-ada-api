@@ -145,7 +145,9 @@ package body Druss.Commands is
       end if;
    end Uptime_Image;
 
+   --  ------------------------------
    --  Print a uptime.
+   --  ------------------------------
    procedure Print_Uptime (Console : in Consoles.Console_Access;
                            Field   : in Field_Type;
                            Value   : in String) is
@@ -160,5 +162,26 @@ package body Druss.Commands is
       when others =>
             Console.Print_Field (Field, Value);
    end Print_Uptime;
+
+   --  ------------------------------
+   --  Print a performance measure in us or ms.
+   --  ------------------------------
+   procedure Print_Perf (Console : in Consoles.Console_Access;
+                         Field   : in Field_Type;
+                         Value   : in String) is
+      use Commands.Consoles;
+   begin
+      if Value = "" then
+         Console.Print_Field (Field, Value);
+      elsif Value'Length <= 3 then
+         Console.Print_Field (Field, Value & " us", J_RIGHT);
+      elsif Value'Length <= 6 then
+         Console.Print_Field (Field, Value (Value'First .. Value'Last - 3) & "."
+                              & Value (Value'Last - 2 .. Value'Last) & " ms", J_RIGHT);
+      else
+         Console.Print_Field (Field, Value (Value'First .. Value'Last - 6) & "."
+                              & Value (Value'Last - 5 .. Value'Last - 3) & " s", J_RIGHT);
+      end if;
+   end Print_Perf;
 
 end Druss.Commands;
