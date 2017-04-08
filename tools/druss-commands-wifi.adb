@@ -109,7 +109,7 @@ package body Druss.Commands.Wifi is
          Command.Do_Status (Args, Context);
       elsif Args.Get_Argument (1) in "on" | "off" then
          Command.Do_Enable (Args, Context);
-      elsif Args.Get_Argument (1) = "status" then
+      elsif Args.Get_Argument (1) = "show" then
          Command.Do_Status (Args, Context);
       else
          Context.Console.Notice (N_USAGE, "Invalid sub-command: " & Args.Get_Argument (1));

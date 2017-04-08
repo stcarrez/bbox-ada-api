@@ -15,7 +15,10 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
+with Ada.IO_Exceptions;
 with Util.Strings;
+with Util.Log.Loggers;
+with Readline;
 with Druss.Commands.Bboxes;
 with Druss.Commands.Get;
 with Druss.Commands.Status;
@@ -23,6 +26,9 @@ with Druss.Commands.Wifi;
 with Druss.Commands.Devices;
 with Druss.Commands.Ping;
 package body Druss.Commands is
+
+   --  The logger
+   Log : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Druss.Commands");
 
    function Uptime_Image (Value : in Natural) return String;
 
@@ -89,6 +95,34 @@ package body Druss.Commands is
       Driver.Add_Command ("devices", Device_Commands'Access);
       Driver.Add_Command ("ping", Ping_Commands'Access);
    end Initialize;
+
+   --  ------------------------------
+   --  Enter in the interactive main loop waiting for user commands and executing them.
+   --  ------------------------------
+   procedure Interactive (Context : in out Context_Type) is
+      Args : Util.Commands.String_Argument_List (Max_Length => 1000,
+                                                 Max_Args   => 100);
+   begin
+      Log.Debug ("Entering in interactive mode");
+      loop
+         declare
+            Line : constant String := Readline.Get_Line ("druss>");
+         begin
+            Log.Debug ("Execute: {0}", Line);
+            Args.Initialize (Line);
+            Driver.Execute (Args.Get_Command_Name, Args, Context);
+
+         exception
+            when others =>
+               Context.Console.Notice (N_INFO, "Command failed");
+         end;
+      end loop;
+
+   exception
+      when Ada.IO_Exceptions.End_Error =>
+         Log.Debug ("End_Error exception received");
+
+   end Interactive;
 
    --  ------------------------------
    --  Print the bbox API status.
