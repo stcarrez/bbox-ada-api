@@ -15,15 +15,10 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
-with Ada.Text_IO;
-with Ada.Strings.Unbounded;
 with Util.Properties;
 with Util.Strings;
 with Druss.Gateways;
 package body Druss.Commands.Status is
-
-   use Ada.Text_IO;
-   use Ada.Strings.Unbounded;
 
    --  ------------------------------
    --  Execute the wifi 'status' command to print the Wifi current status.
@@ -31,6 +26,9 @@ package body Druss.Commands.Status is
    procedure Do_Status (Command   : in Command_Type;
                         Args      : in Argument_List'Class;
                         Context   : in out Context_Type) is
+      pragma Unreferenced (Command, Args);
+      procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type);
+
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
       N : Natural := 0;
 
@@ -72,28 +70,33 @@ package body Druss.Commands.Status is
       Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Box_Status'Access);
    end Do_Status;
 
+   --  ------------------------------
    --  Execute a status command to report information about the Bbox.
+   --  ------------------------------
    overriding
    procedure Execute (Command   : in Command_Type;
                       Name      : in String;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is
+      pragma Unreferenced (Name);
    begin
       Command.Do_Status (Args, Context);
    end Execute;
 
+   --  ------------------------------
    --  Write the help associated with the command.
+   --  ------------------------------
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
+      pragma Unreferenced (Command);
+
+      Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
-      Put_Line ("status: Control and get status about the Bbox Wifi");
-      Put_Line ("Usage: wifi {<action>} [<parameters>]");
-      New_Line;
-      Put_Line ("  status [IP]...         Turn ON the wifi on the Bbox.");
-      Put_Line ("  wifi off [IP]...        Turn OFF the wifi on the Bbox.");
-      Put_Line ("  wifi show               Show information about the wifi on the Bbox.");
-      Put_Line ("  wifi devices            Show the wifi devices which are connected.");
+      Console.Notice (N_HELP, "status: give information about the Bbox status");
+      Console.Notice (N_HELP, "Usage: wifi {<action>} [<parameters>]");
+      Console.Notice (N_HELP, "");
+      Console.Notice (N_HELP, "  status [IP]...      Give information about the Bbox status");
    end Help;
 
 end Druss.Commands.Status;
