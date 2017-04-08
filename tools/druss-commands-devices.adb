@@ -25,6 +25,7 @@ package body Druss.Commands.Devices is
    --  ------------------------------
    procedure Do_List (Command   : in Command_Type;
                       Args      : in Argument_List'Class;
+                      Selector  : in Device_Selector_Type;
                       Context   : in out Context_Type) is
       pragma Unreferenced (Command, Args);
       procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type);
@@ -40,9 +41,22 @@ package body Druss.Commands.Devices is
             Link : constant String := Manager.Get (Name & ".link", "");
             Kind : constant String := Manager.Get (Name & ".devicetype", "");
          begin
-            if Manager.Get (Name & ".active", "") = "0" then
-               return;
-            end if;
+            case Selector is
+               when DEVICE_ALL =>
+                  null;
+
+               when DEVICE_ACTIVE =>
+                  if Manager.Get (Name & ".active", "") = "0" then
+                     return;
+                  end if;
+
+               when DEVICE_INACTIVE =>
+                  if Manager.Get (Name & ".active", "") = "1" then
+                     return;
+                  end if;
+
+            end case;
+
             Console.Start_Row;
             Console.Print_Field (F_BBOX_IP_ADDR, Gateway.Ip);
             Console.Print_Field (F_IP_ADDR, Manager.Get (Name & ".ipaddress", ""));
@@ -89,7 +103,21 @@ package body Druss.Commands.Devices is
                       Context   : in out Context_Type) is
       pragma Unreferenced (Name);
    begin
-      Command.Do_List (Args, Context);
+     if Args.Get_Count > 1 then
+         Context.Console.Notice (N_USAGE, "Too many arguments to the command");
+         Druss.Commands.Driver.Usage (Args);
+      elsif Args.Get_Count = 0 then
+         Command.Do_List (Args, DEVICE_ACTIVE, Context);
+      elsif Args.Get_Argument (1) = "all" then
+         Command.Do_List (Args, DEVICE_ALL, Context);
+      elsif Args.Get_Argument (1) = "active" then
+         Command.Do_List (Args, DEVICE_ACTIVE, Context);
+      elsif Args.Get_Argument (1) = "inactive" then
+         Command.Do_List (Args, DEVICE_INACTIVE, Context);
+      else
+         Context.Console.Notice (N_USAGE, "Invalid argument: " & Args.Get_Argument (1));
+         Druss.Commands.Driver.Usage (Args);
+      end if;
    end Execute;
 
    --  ------------------------------
@@ -102,8 +130,13 @@ package body Druss.Commands.Devices is
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
       Console.Notice (N_HELP, "devices: Print information about the devices");
-      Console.Notice (N_HELP, "Usage: devices [options]");
+      Console.Notice (N_HELP, "Usage: devices [all | active | inactive]");
       Console.Notice (N_HELP, "");
+      Console.Notice (N_HELP, "  List the devices that are known by the Bbox.");
+      Console.Notice (N_HELP, "");
+      Console.Notice (N_HELP, "    all        List all the devices");
+      Console.Notice (N_HELP, "    active     List the active devices (the default)");
+      Console.Notice (N_HELP, "    inative    List the inactive devices");
    end Help;
 
 end Druss.Commands.Devices;
