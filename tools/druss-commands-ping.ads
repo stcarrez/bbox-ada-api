@@ -22,6 +22,7 @@ package Druss.Commands.Ping is
 
    procedure Do_Ping (Command   : in Command_Type;
                       Args      : in Argument_List'Class;
+                      Selector  : in Device_Selector_Type;
                       Context   : in out Context_Type);
 
    --  Execute a ping from the gateway to each device.
