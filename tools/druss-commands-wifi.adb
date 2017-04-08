@@ -15,21 +15,20 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
-with Ada.Text_IO;
 with Ada.Strings.Unbounded;
 with Bbox.API;
 package body Druss.Commands.Wifi is
 
    use Ada.Strings.Unbounded;
-   use Ada.Text_IO;
 
    --  ------------------------------
    --  Enable or disable with wifi radio.
    --  ------------------------------
-   procedure Set_Enable (Command   : in Command_Type;
-                         Args      : in Argument_List'Class;
-                         Value     : in String;
-                         Context   : in out Context_Type) is
+   procedure Do_Enable (Command   : in Command_Type;
+                        Args      : in Argument_List'Class;
+                        Context   : in out Context_Type) is
+      procedure Radio (Gateway : in out Druss.Gateways.Gateway_Type;
+                       State   : in String);
 
       procedure Radio (Gateway : in out Druss.Gateways.Gateway_Type;
                        State   : in String) is
@@ -44,7 +43,7 @@ package body Druss.Commands.Wifi is
 
    begin
       Druss.Commands.Gateway_Command (Command, Args, 1, Radio'Access, Context);
-   end Set_Enable;
+   end Do_Enable;
 
    --  ------------------------------
    --  Execute the wifi 'status' command to print the Wifi current status.
@@ -52,6 +51,9 @@ package body Druss.Commands.Wifi is
    procedure Do_Status (Command   : in Command_Type;
                         Args      : in Argument_List'Class;
                         Context   : in out Context_Type) is
+      pragma Unreferenced (Command, Args);
+      procedure Wifi_Status (Gateway : in out Druss.Gateways.Gateway_Type);
+
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
 
       procedure Wifi_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
@@ -101,18 +103,16 @@ package body Druss.Commands.Wifi is
                       Name      : in String;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is
-
+      pragma Unreferenced (Name);
    begin
       if Args.Get_Count = 0 then
          Command.Do_Status (Args, Context);
-      elsif Args.Get_Argument (1) = "on" then
-         Command.Set_Enable (Args, "on", Context);
-      elsif Args.Get_Argument (1) = "off" then
-         Command.Set_Enable (Args, "on", Context);
+      elsif Args.Get_Argument (1) in "on" | "off" then
+         Command.Do_Enable (Args, Context);
       elsif Args.Get_Argument (1) = "status" then
          Command.Do_Status (Args, Context);
       else
-         Put_Line ("Invalid sub-command: " & Args.Get_Argument (1));
+         Context.Console.Notice (N_USAGE, "Invalid sub-command: " & Args.Get_Argument (1));
          Druss.Commands.Driver.Usage (Args);
       end if;
    end Execute;
@@ -123,14 +123,17 @@ package body Druss.Commands.Wifi is
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
+      pragma Unreferenced (Command);
+
+      Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
-      Put_Line ("wifi: Control and get status about the Bbox Wifi");
-      Put_Line ("Usage: wifi {<action>} [<parameters>]");
-      New_Line;
-      Put_Line ("  wifi on [IP]...         Turn ON the wifi on the Bbox.");
-      Put_Line ("  wifi off [IP]...        Turn OFF the wifi on the Bbox.");
-      Put_Line ("  wifi show               Show information about the wifi on the Bbox.");
-      Put_Line ("  wifi devices            Show the wifi devices which are connected.");
+      Console.Notice (N_HELP, "wifi: Control and get status about the Bbox Wifi");
+      Console.Notice (N_HELP, "Usage: wifi {<action>} [<parameters>]");
+      Console.Notice (N_HELP, "");
+      Console.Notice (N_HELP, "  wifi on [IP]...    Turn ON the wifi on the Bbox.");
+      Console.Notice (N_HELP, "  wifi off [IP]...   Turn OFF the wifi on the Bbox.");
+      Console.Notice (N_HELP, "  wifi show          Show information about the wifi on the Bbox.");
+      Console.Notice (N_HELP, "  wifi devices       Show the wifi devices which are connected.");
    end Help;
 
 end Druss.Commands.Wifi;
