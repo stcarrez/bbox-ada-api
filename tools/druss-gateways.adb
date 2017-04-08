@@ -19,7 +19,6 @@ with Util.Properties.Basic;
 with Util.Strings;
 with Util.Log.Loggers;
 with Util.Http.Clients;
-with Bbox.API;
 package body Druss.Gateways is
 
    use Ada.Strings.Unbounded;
@@ -42,7 +41,7 @@ package body Druss.Gateways is
       elsif Left.Is_Null or Right.Is_Null then
          return False;
       else
-         return Left.Value.IP = Right.Value.IP;
+         return Left.Value.Ip = Right.Value.Ip;
       end if;
    end "=";
 
@@ -111,7 +110,7 @@ package body Druss.Gateways is
       if Gateway.State.Get_State = BUSY then
          return;
       end if;
-      Box.Set_Server (To_String (Gateway.IP));
+      Box.Set_Server (To_String (Gateway.Ip));
       if Ada.Strings.Unbounded.Length (Gateway.Passwd) > 0 then
          Box.Login (To_String (Gateway.Passwd));
       end if;
@@ -128,7 +127,7 @@ package body Druss.Gateways is
 
    exception
       when Util.Http.Clients.Connection_Error =>
-         Log.Error ("Cannot connect to {0}", To_String (Gateway.IP));
+         Log.Error ("Cannot connect to {0}", To_String (Gateway.Ip));
 
    end Refresh;
 
@@ -164,11 +163,11 @@ package body Druss.Gateways is
                      IP   : in String) return Gateway_Ref is
    begin
       for G of List loop
-         if G.Value.IP = IP then
+         if G.Value.Ip = IP then
             return G;
          end if;
       end loop;
-      --  raise Not_Found;
+      Log.Debug ("No gateway with IP {0}", IP);
       return Null_Gateway;
    end Find_IP;
 
