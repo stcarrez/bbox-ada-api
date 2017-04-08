@@ -31,8 +31,12 @@ package Druss.Commands.Bboxes is
    --  Enable or disable the bbox management by Druss.
    procedure Do_Enable (Command   : in Command_Type;
                         Args      : in Util.Commands.Argument_List'Class;
-                        State     : in Boolean;
                         Context   : in out Context_Type);
+
+   --  Set the password to be used by the Bbox API to connect to the box.
+   procedure Do_Password (Command   : in Command_Type;
+                          Args      : in Util.Commands.Argument_List'Class;
+                          Context   : in out Context_Type);
 
    --  Execute the command with the arguments.  The command name is passed with the command
    --  arguments.
