@@ -22,6 +22,7 @@ package Druss.Commands.Devices is
 
    procedure Do_List (Command   : in Command_Type;
                       Args      : in Argument_List'Class;
+                      Selector  : in Device_Selector_Type;
                       Context   : in out Context_Type);
 
    --  Execute a status command to report information about the Bbox.
