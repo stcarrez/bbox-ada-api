@@ -9,7 +9,7 @@ project Bbox_Tools is
 
    Mains := ("druss-tools.adb");
 
-   for Source_Dirs use ("tools");
+   for Source_Dirs use ("tools", "tools/readline");
 
    for Main use Mains;
 
