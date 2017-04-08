@@ -31,12 +31,12 @@ ou dans un mode interactif.  Druss propose aussi une commande générique
 permettant d'intéroger n'importe quelle API de la Bbox.  Druss a un mode
 intéractive que vous pouvez activer avec l'option *-i*.
 
-
-# Commandes bbox
+## Commandes bbox
 
 La première commande a utiliser est la commande **druss bbox discover** pour demander
 à Druss de découvrir les Bbox connectées.  Techniquement la découverte est basée sur
-le protocole SSDP et la découverte du service UPnP/igd de la Bbox.
+le protocole SSDP et la découverte du service UPnP/igd de la Bbox.  Druss est capable
+de gérer plusieurs Bbox sur le réseaux (plutot rare).
 
 ```
 $ druss bbox discover
@@ -49,10 +49,12 @@ aux APIs sécurisées de la Bbox.
 $ druss bbox password <passwd>
 ```
 
-# Commande status
+## Commande status
 
 La commande de status indique des informations générales sur la Bbox et la connexion
-Internet.
+Internet.  Dans la liste ci-dessous, deux Bbox sont indiquées, une première avec l'adresse
+IP *192.168.0.1* et une seconde avec *192.168.1.240*.  Il y a de grande chances pour que
+la commande n'en reporte qu'une et avec l'adresse IP *192.168.1.254*.
 ```
 $ druss status
 LAN IP          WAN IP          Internet VoIP  Wifi 2.4G Wifi 5G   Parental  DynDNS    Devices     Uptime
@@ -60,7 +62,7 @@ LAN IP          WAN IP          Internet VoIP  Wifi 2.4G Wifi 5G   Parental  Dyn
 192.168.1.240   XXX.XXX.XXX.XX  OK       Up    ON        ON        0                   14          7d 41m
 ```
 
-# Commande devices
+## Commande devices
 
 La commande **druss devices** permet de lister les équipements qui ont été détectés par la Bbox.
 Par défaut la commande ne va lister que les équipements actifs mais il est possible d'obtenir
@@ -79,7 +81,7 @@ Bbox IP         Device IP       Ethernet            Hostname                    
 192.168.1.240   192.168.1.129   XX:XX:XX:XX:XX:XX   zebulon                           Ethernet port 3
 ```
 
-# Commande ping
+## Commande ping
 
 La command **druss ping** demande à la Bbox de lancer un **ping** sur chacuns des équipements
 et ensuite de donner la liste des équipements connectés avec le temps du ping.
@@ -98,7 +100,7 @@ Bbox IP         Device IP       Hostname                    Ping           Link
 192.168.1.240   192.168.1.129   zebulon                             740 us Ethernet port 3
 ```
 
-# Commandes wifi
+## Commandes wifi
 
 La commande Wifi permet d'obtenir des informations sur le Wifi, de l'arreter ou le démarrer.
 Le status du Wifi est obtenu par la commande **druss wifi**.  La clef d'accès Wifi n'est
@@ -112,7 +114,7 @@ Bbox IP        Enable  Channel SSID                Protocol    Encryption  Devic
 192.168.1.240  ON      132     Sauron              WPA+WPA2    AES
 ```
 
-Pour allumer ou éteindre le Wifi, la commande **druss wifi on** ou **druss wifi off**.
+Pour allumer ou éteindre le Wifi, il faut utiliser la commande **druss wifi on** ou **druss wifi off**.
 Cette commande va jouer sur l'activation de la radio Wifi de la Bbox.  Il est possible
 de faire son propre planificateur Wifi ou bien de réactiver le Wifi lorsque le planificateur
 Wifi de la Bbox l'a éteint.
@@ -120,16 +122,91 @@ Wifi de la Bbox l'a éteint.
 $ druss wifi off
 ```
 
-# Commande get
+## Commande get
 
 La command **druss get** permet d'executer n'importe quelle API **GET** de l'API Bbox.
 Le résultat est ensuite retourné au format JSON.  Le résultat de la commande est un JSON
 valide qui peut ensuite être analysé, reformatté (par **jshon** par exemple).
 
 ```
-$ druss get device
+$ druss get device | jshon
 [
-{"device":{"now":"2017-04-08T21:26:23Z","status":1,"numberofboots":37,"modelname":"TVW620.I","user_configured":1,"serialnumber":"XXXXX","display":{"luminosity":100,"state":"."},"main":{"version":"11.1.4","date":"2016-07-11T15:34:49Z"},"reco":{"version":"11.1.4","date":"2016-07-11T15:27:24Z"},"bcck":{"version":"8.5.16"},"ldr1":{"version":"8.5.16"},"ldr2":{"version":"8.5.16"},"firstusedate":"2014-10-01T15:51:44Z","uptime":2108058}}
-,{"device":{"now":"2017-04-08T21:26:24+0200","status":1,"numberofboots":46,"modelname":"F@st5330b","user_configured":1,"serialnumber":"XXXXXX","display":{"luminosity":100,"state":"."},"main":{"version":"12.0.20","date":"2017-03-09T13:51:00Z"},"reco":{"version":"12.0.20","date":"2017-03-09T13:42:37Z"},"running":{"version":"12.0.20","date":"2017-03-09T13:49:52+0100"},"bcck":{"version":"8.8.18"},"ldr1":{"version":"8.8.18"},"ldr2":{"version":"8.8.18"},"firstusedate":"","uptime":607923,"using":{"ipv4":1,"ipv6":0,"ftth":0,"adsl":1,"vdsl":0}}}
+ {
+  "device": {
+   "now": "2017-04-08T21:40:37Z",
+   "status": 1,
+   "numberofboots": 37,
+   "modelname": "TVW620.I",
+   "user_configured": 1,
+   "serialnumber": "XXXXX",
+   "display": {
+    "luminosity": 100,
+    "state": "."
+   },
+   "main": {
+    "version": "11.1.4",
+    "date": "2016-07-11T15:34:49Z"
+   },
+   "reco": {
+    "version": "11.1.4",
+    "date": "2016-07-11T15:27:24Z"
+   },
+   "bcck": {
+    "version": "8.5.16"
+   },
+   "ldr1": {
+    "version": "8.5.16"
+   },
+   "ldr2": {
+    "version": "8.5.16"
+   },
+   "firstusedate": "2014-10-01T15:51:44Z",
+   "uptime": 2108913
+  }
+ },
+ {
+  "device": {
+   "now": "2017-04-08T21:40:39+0200",
+   "status": 1,
+   "numberofboots": 46,
+   "modelname": "F@st5330b",
+   "user_configured": 1,
+   "serialnumber": "XXXXXX",
+   "display": {
+    "luminosity": 100,
+    "state": "."
+   },
+   "main": {
+    "version": "12.0.20",
+    "date": "2017-03-09T13:51:00Z"
+   },
+   "reco": {
+    "version": "12.0.20",
+    "date": "2017-03-09T13:42:37Z"
+   },
+   "running": {
+    "version": "12.0.20",
+    "date": "2017-03-09T13:49:52+0100"
+   },
+   "bcck": {
+    "version": "8.8.18"
+   },
+   "ldr1": {
+    "version": "8.8.18"
+   },
+   "ldr2": {
+    "version": "8.8.18"
+   },
+   "firstusedate": "",
+   "uptime": 608779,
+   "using": {
+    "ipv4": 1,
+    "ipv6": 0,
+    "ftth": 0,
+    "adsl": 1,
+    "vdsl": 0
+   }
+  }
+ }
 ]
 ```
