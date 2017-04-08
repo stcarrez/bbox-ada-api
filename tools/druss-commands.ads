@@ -22,6 +22,9 @@ with Util.Commands.Consoles.Text;
 with Druss.Gateways;
 package Druss.Commands is
 
+   --  Device selector to select all, active or inactive devices.
+   type Device_Selector_Type is (DEVICE_ALL, DEVICE_ACTIVE, DEVICE_INACTIVE);
+
    --  The list of fields that are printed on the console.
    type Field_Type is (F_IP_ADDR,
                        F_BBOX_IP_ADDR,
