@@ -16,10 +16,6 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 
-with Util.Commands.Drivers;
-with Util.Properties;
-with Util.Commands;
-with Druss.Gateways;
 package Druss.Commands.Status is
 
    type Command_Type is new Druss.Commands.Drivers.Command_Type with null record;
