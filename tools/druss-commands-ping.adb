@@ -33,7 +33,7 @@ package body Druss.Commands.Ping is
 
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
 
-      procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
+      procedure Do_Ping (Gateway : in out Druss.Gateways.Gateway_Type) is
          Box  : Bbox.API.Client_Type;
 
          procedure Ping_Device (Manager : in Util.Properties.Manager;
@@ -56,22 +56,57 @@ package body Druss.Commands.Ping is
          Box.Login (To_String (Gateway.Passwd));
 
          Bbox.API.Iterate (Gateway.Hosts, "hosts.list", Ping_Device'Access);
+      end Do_Ping;
+
+      procedure Box_Status (Gateway : in out Druss.Gateways.Gateway_Type) is
+         procedure Print_Device (Manager : in Util.Properties.Manager;
+                                 Name    : in String);
+
+         procedure Print_Device (Manager : in Util.Properties.Manager;
+                                 Name    : in String) is
+            Link : constant String := Manager.Get (Name & ".link", "");
+            Kind : constant String := Manager.Get (Name & ".devicetype", "");
+         begin
+            if Manager.Get (Name & ".active", "") = "0" then
+               return;
+            end if;
+            Console.Start_Row;
+            Console.Print_Field (F_BBOX_IP_ADDR, Gateway.Ip);
+            Console.Print_Field (F_IP_ADDR, Manager.Get (Name & ".ipaddress", ""));
+            Console.Print_Field (F_HOSTNAME, Manager.Get (Name & ".hostname", ""));
+            Console.Print_Field (F_ACTIVE, Manager.Get (Name & ".ping.average", ""));
+            if Link = "Ethernet" then
+               Console.Print_Field (F_LINK, Link & " port "
+                                    & Manager.Get (Name & ".ethernet.logicalport", ""));
+            else
+               Console.Print_Field (F_LINK, Link & " RSSI "
+                                    & Manager.Get (Name & ".wireless.rssi0", ""));
+            end if;
+            Console.End_Row;
+         end Print_Device;
+
+      begin
+         Gateway.Refresh;
+
+         Bbox.API.Iterate (Gateway.Hosts, "hosts.list", Print_Device'Access);
       end Box_Status;
 
    begin
+      Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Do_Ping'Access);
+      delay 5.0;
       Console.Start_Title;
       Console.Print_Title (F_BBOX_IP_ADDR, "Bbox IP", 16);
       Console.Print_Title (F_IP_ADDR, "Device IP", 16);
-      Console.Print_Title (F_ETHERNET, "Ethernet", 20);
       Console.Print_Title (F_HOSTNAME, "Hostname", 28);
-      Console.Print_Title (F_DEVTYPE, "Type", 6);
-      --  Console.Print_Title (F_ACTIVE, "Active", 8);
+      Console.Print_Title (F_ACTIVE, "Ping", 8);
       Console.Print_Title (F_LINK, "Link", 18);
       Console.End_Title;
       Druss.Gateways.Iterate (Context.Gateways, Gateways.ITER_ENABLE, Box_Status'Access);
    end Do_Ping;
 
-   --  Execute a status command to report information about the Bbox.
+   --  ------------------------------
+   --  Execute a ping from the gateway to each device.
+   --  ------------------------------
    overriding
    procedure Execute (Command   : in Command_Type;
                       Name      : in String;
@@ -82,16 +117,20 @@ package body Druss.Commands.Ping is
       Command.Do_Ping (Args, Context);
    end Execute;
 
+   --  ------------------------------
    --  Write the help associated with the command.
+   --  ------------------------------
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
       pragma Unreferenced (Command);
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
-      Console.Notice (N_HELP, "devices: Print information about the devices");
-      Console.Notice (N_HELP, "Usage: devices [options]");
+      Console.Notice (N_HELP, "ping: Ask the Bbox to ping the devices");
+      Console.Notice (N_HELP, "Usage: ping {active | inactive}");
       Console.Notice (N_HELP, "");
+      Console.Notice (N_HELP, "  active     Ping the active devices only");
+      Console.Notice (N_HELP, "  inative    Ping the inactive devices only");
    end Help;
 
 end Druss.Commands.Ping;
