@@ -16,12 +16,16 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 with Util.Properties;
+with Util.Log.Loggers;
 with Bbox.API;
 with Druss.Gateways;
 with Ada.Strings.Unbounded;
 package body Druss.Commands.Ping is
 
    use Ada.Strings.Unbounded;
+
+   --  The logger
+   Log : constant Util.Log.Loggers.Logger := Util.Log.Loggers.Create ("Druss.Commands.Ping");
 
    --  ------------------------------
    --  Execute the wifi 'status' command to print the Wifi current status.
@@ -41,9 +45,10 @@ package body Druss.Commands.Ping is
             Link : constant String := Manager.Get (Name & ".link", "");
             Id   : constant String := Manager.Get (Name & ".id", "");
          begin
-            if Manager.Get (Name & ".active", "") = "0" then
-               return;
-            end if;
+--              if Manager.Get (Name & ".active", "") = "0" then
+--                 return;
+--              end if;
+            Log.Info ("Ping command on {0}", Manager.Get (Name & ".ipaddress", ""));
             Box.Post ("hosts/" & Id, "action=ping");
          end Ping_Device;
 
