@@ -86,6 +86,9 @@ package Druss.Commands is
 
    procedure Initialize;
 
+   --  Enter in the interactive main loop waiting for user commands and executing them.
+   procedure Interactive (Context : in out Context_Type);
+
    --  Print the bbox API status.
    procedure Print_Status (Console : in Consoles.Console_Access;
                            Field   : in Field_Type;
