@@ -34,7 +34,7 @@ package body Druss.Commands.Get is
                       Name      : in String;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is
-      pragma Unreferenced (Name);
+      pragma Unreferenced (Command, Name);
       procedure Execute_One (Gateway : in out Druss.Gateways.Gateway_Type);
 
       Need_Colon : Boolean := False;
@@ -93,20 +93,32 @@ package body Druss.Commands.Get is
    overriding
    procedure Help (Command   : in Command_Type;
                    Context   : in out Context_Type) is
-      pragma Unreferenced (Command, Context);
+      pragma Unreferenced (Command);
+
+      Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
    begin
-      Put_Line ("get: Execute one or several GET operation on the Bbox API" &
-                  " and print the raw JSON result");
-      Put_Line ("Usage: get <operation>...");
-      New_Line;
-      Put_Line ("  The Bbox API operation are called and the raw JSON result is printed.");
-      Put_Line ("  When several operations are called, a JSON array is formed to insert");
-      Put_Line ("  their result in the final JSON content so that it is valid.");
-      Put_Line ("  Examples:");
-      Put_Line ("    get device             Get information about the Bbox");
-      Put_Line ("    get hosts              Get the list of hosts detected by the Bbox");
-      Put_Line ("    get wan/ip             Get information about the WAN connection");
-      Put_Line ("    get wan/ip wan/xdsl    Get the WAN connection and xDSL line information");
+      Console.Notice (N_HELP, "get: Execute one or several GET operation on the Bbox API" &
+                        " and print the raw JSON result");
+      Console.Notice (N_HELP,
+                      "Usage: get <operation>...");
+      Console.Notice (N_HELP,
+                      "");
+      Console.Notice (N_HELP,
+                      "  The Bbox API operation are called and the raw JSON result is printed.");
+      Console.Notice (N_HELP,
+                      "  When several operations are called, a JSON array is formed to insert");
+      Console.Notice (N_HELP,
+                      "  their result in the final JSON content so that it is valid.");
+      Console.Notice (N_HELP,
+                      "  Examples:");
+      Console.Notice (N_HELP,
+                      "    get device             Get information about the Bbox");
+      Console.Notice (N_HELP,
+                      "    get hosts              Get the list of hosts detected by the Bbox");
+      Console.Notice (N_HELP,
+                      "    get wan/ip             Get information about the WAN connection");
+      Console.Notice (N_HELP,
+                      "    get wan/ip wan/xdsl    Get the WAN and xDSL line information");
    end Help;
 
 end Druss.Commands.Get;
