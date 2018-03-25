@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands -- Commands available for Druss
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2018 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 -----------------------------------------------------------------------
 
 with Util.Commands.Drivers;
+with Util.Commands.Parsers;
 with Util.Commands.Consoles;
 with Util.Commands.Consoles.Text;
 with Druss.Gateways;
@@ -73,8 +74,9 @@ package Druss.Commands is
    end record;
 
    package Drivers is
-     new Util.Commands.Drivers (Context_Type => Context_Type,
-                                Driver_Name  => "druss-drivers");
+     new Util.Commands.Drivers (Context_Type  => Context_Type,
+                                Config_Parser => Util.Commands.Parsers.No_Parser,
+                                Driver_Name   => "druss-drivers");
 
    subtype Argument_List is Util.Commands.Argument_List;
 
