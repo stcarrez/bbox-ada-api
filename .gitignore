@@ -1,0 +1,9 @@
+bbox.gpr
+bbox_tests.gpr
+bbox_tools.gpr
+autom4te.cache
+*.tar.gz
+Makefile
+config.status
+*~
+*.log
