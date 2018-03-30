@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-wifi -- Wifi related commands
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2018 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,7 +99,7 @@ package body Druss.Commands.Wifi is
    --  Execute a command to control or get status about the Wifi.
    --  ------------------------------
    overriding
-   procedure Execute (Command   : in Command_Type;
+   procedure Execute (Command   : in out Command_Type;
                       Name      : in String;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type) is

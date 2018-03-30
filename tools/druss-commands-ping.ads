@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-ping -- Ping devices from the gateway
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2018 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ package Druss.Commands.Ping is
 
    --  Execute a ping from the gateway to each device.
    overriding
-   procedure Execute (Command   : in Command_Type;
+   procedure Execute (Command   : in out Command_Type;
                       Name      : in String;
                       Args      : in Argument_List'Class;
                       Context   : in out Context_Type);

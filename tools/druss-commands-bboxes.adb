@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-bboxes -- Commands to manage the bboxes
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2018 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -144,7 +144,7 @@ package body Druss.Commands.Bboxes is
    --  arguments.
    --  ------------------------------
    overriding
-   procedure Execute (Command   : in Command_Type;
+   procedure Execute (Command   : in out Command_Type;
                       Name      : in String;
                       Args      : in Util.Commands.Argument_List'Class;
                       Context   : in out Context_Type) is
