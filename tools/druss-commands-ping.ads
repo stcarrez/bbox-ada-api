@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-ping -- Ping devices from the gateway
---  Copyright (C) 2017, 2018 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ package Druss.Commands.Ping is
 
    --  Write the help associated with the command.
    overriding
-   procedure Help (Command   : in Command_Type;
+   procedure Help (Command   : in out Command_Type;
                    Context   : in out Context_Type);
 
 end Druss.Commands.Ping;
