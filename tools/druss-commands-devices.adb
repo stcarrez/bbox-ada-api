@@ -62,7 +62,7 @@ package body Druss.Commands.Devices is
             Console.Print_Field (F_IP_ADDR, Manager.Get (Name & ".ipaddress", ""));
             Console.Print_Field (F_ETHERNET, Manager.Get (Name & ".macaddress", ""));
             Console.Print_Field (F_HOSTNAME, Manager.Get (Name & ".hostname", ""));
-            Console.Print_Field (F_ACTIVE, Manager.Get (Name & ".active", ""));
+            --  Console.Print_Field (F_ACTIVE, Manager.Get (Name & ".active", ""));
             Console.Print_Field (F_DEVTYPE, (if Kind = "STB" then "STB" else ""));
             if Link = "Ethernet" then
                Console.Print_Field (F_LINK, Link & " port "
