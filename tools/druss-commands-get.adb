@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-get -- Raw JSON API Get command
---  Copyright (C) 2017, 2018 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,7 +75,7 @@ package body Druss.Commands.Get is
 
    begin
       if Args.Get_Count = 0 then
-         Druss.Commands.Driver.Usage (Args);
+         Druss.Commands.Driver.Usage (Args, Context);
       else
          if Args.Get_Count > 1 or else Context.Gateways.Length > 1 then
             Ada.Text_IO.Put_Line ("[");
@@ -91,7 +91,7 @@ package body Druss.Commands.Get is
    --  Write the help associated with the command.
    --  ------------------------------
    overriding
-   procedure Help (Command   : in Command_Type;
+   procedure Help (Command   : in out Command_Type;
                    Context   : in out Context_Type) is
       pragma Unreferenced (Command);
 
