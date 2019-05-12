@@ -28,12 +28,10 @@ with Druss.Config;
 with Druss.Commands;
 procedure Druss.Tools is
 
-   use Ada.Text_IO;
    use Ada.Strings.Unbounded;
 
    Log_Config  : Util.Properties.Manager;
    Config      : Ada.Strings.Unbounded.Unbounded_String;
-   Output      : Ada.Strings.Unbounded.Unbounded_String;
    Debug       : Boolean := False;
    Verbose     : Boolean := False;
    Interactive : Boolean := False;
@@ -63,9 +61,6 @@ begin
 
          when 'c' =>
             Config := Ada.Strings.Unbounded.To_Unbounded_String (Parameter);
-
-         when 'o' =>
-            Output := Ada.Strings.Unbounded.To_Unbounded_String (Parameter);
 
          when 'd' =>
             Debug := True;
@@ -117,6 +112,9 @@ begin
    end;
 
 exception
+   when Util.Commands.Not_Found =>
+      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+
    when E : Invalid_Switch =>
       Ada.Text_IO.Put_Line ("Invalid option: " & Ada.Exceptions.Exception_Message (E));
       Ada.Command_Line.Set_Exit_Status (2);
