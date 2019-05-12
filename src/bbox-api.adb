@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  bbox -- Bbox API
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ package body Bbox.API is
    function Get_URI (Client    : in Client_Type;
                      Operation : in String) return String is
    begin
-      return "http://" & To_String (Client.Server) & "/api/v1/" & Operation;
+      return "https://" & To_String (Client.Server) & "/api/v1/" & Operation;
    end Get_URI;
 
    --  ------------------------------
@@ -99,7 +99,10 @@ package body Bbox.API is
    function Strip_Unecessary_Array (Content : in String) return String is
       Last      : Natural := Content'Last;
    begin
-      while Last > Content'First and Content (Last) = ASCII.LF loop
+      if Content'Length = 0 then
+         return Content;
+      end if;
+      while Last > Content'First and then Content (Last) = ASCII.LF loop
          Last := Last - 1;
       end loop;
       if Content (Content'First) = '[' and Content (Last) = ']' then
