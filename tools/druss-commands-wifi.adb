@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-wifi -- Wifi related commands
---  Copyright (C) 2017, 2018 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -113,7 +113,7 @@ package body Druss.Commands.Wifi is
          Command.Do_Status (Args, Context);
       else
          Context.Console.Notice (N_USAGE, "Invalid sub-command: " & Args.Get_Argument (1));
-         Druss.Commands.Driver.Usage (Args);
+         Druss.Commands.Driver.Usage (Args, Context);
       end if;
    end Execute;
 
@@ -121,7 +121,7 @@ package body Druss.Commands.Wifi is
    --  Write the help associated with the command.
    --  ------------------------------
    overriding
-   procedure Help (Command   : in Command_Type;
+   procedure Help (Command   : in out Command_Type;
                    Context   : in out Context_Type) is
       pragma Unreferenced (Command);
 
