@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-tools -- Druss main tool
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -104,7 +104,7 @@ begin
    end if;
    if First >= Ada.Command_Line.Argument_Count then
       Ada.Text_IO.Put_Line ("Missing command name to execute.");
-      Druss.Commands.Driver.Usage (All_Args);
+      Druss.Commands.Driver.Usage (All_Args, Ctx);
       Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
       return;
    end if;
