@@ -1,5 +1,5 @@
 dnl Autoconf configure script for Bbox Ada Library
-dnl Copyright (C) 2017 Stephane Carrez
+dnl Copyright (C) 2017, 2019 Stephane Carrez
 dnl Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 dnl
 dnl  Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ dnl AM_MAINTAINER_MODE
 
 # Current release settings
 BBOX_MAJOR_VERSION=0
-BBOX_MINOR_VERSION=1
+BBOX_MINOR_VERSION=2
 BBOX_MICRO_VERSION=0
 BBOX_VERSION=$BBOX_MAJOR_VERSION.$BBOX_MINOR_VERSION.$BBOX_MICRO_VERSION
 
@@ -57,11 +57,11 @@ AM_SHARED_LIBRARY_SUPPORT
 ##########################################
 # Ada Util library
 ##########################################
-AM_GNAT_FIND_PROJECT([ada-util],[Ada Utility Library],[util],
+AM_GNAT_FIND_PROJECT([ada-util],[Ada Utility Library],[utilada_sys],
   [git@github.com:stcarrez/ada-util.git],
   [Building Ada CSS requires the Ada Utility Library.],
   [
-    UTIL_DIR=${gnat_project_dir_util}
+    UTIL_DIR=${gnat_project_dir_utilada_sys}
   ])
 AC_SUBST(UTIL_DIR)
 
