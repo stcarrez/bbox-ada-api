@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands -- Commands available for Druss
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ package body Druss.Commands is
    begin
       if Args.Get_Count < Arg_Pos then
          Context.Console.Notice (N_USAGE, "Missing argument for command");
-         Druss.Commands.Driver.Usage (Args);
+         Druss.Commands.Driver.Usage (Args, Context);
       end if;
       declare
          procedure Operation (Gateway : in out Druss.Gateways.Gateway_Type);
@@ -119,7 +119,8 @@ package body Druss.Commands is
                                                  Max_Args   => 100);
    begin
       Log.Debug ("Entering in interactive mode");
-      Driver.Add_Command (Name => "quit", Handler => Quit'Access);
+      Driver.Add_Command (Name => "quit", Handler => Quit'Access,
+                          Description => "quit the program");
       loop
          declare
             Line : constant String := Readline.Get_Line ("druss>");
