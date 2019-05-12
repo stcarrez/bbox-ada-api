@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-devices -- Print information about the devices
---  Copyright (C) 2017, 2018 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,9 +103,9 @@ package body Druss.Commands.Devices is
                       Context   : in out Context_Type) is
       pragma Unreferenced (Name);
    begin
-     if Args.Get_Count > 1 then
+      if Args.Get_Count > 1 then
          Context.Console.Notice (N_USAGE, "Too many arguments to the command");
-         Druss.Commands.Driver.Usage (Args);
+         Druss.Commands.Driver.Usage (Args, Context);
       elsif Args.Get_Count = 0 then
          Command.Do_List (Args, DEVICE_ACTIVE, Context);
       elsif Args.Get_Argument (1) = "all" then
@@ -116,7 +116,7 @@ package body Druss.Commands.Devices is
          Command.Do_List (Args, DEVICE_INACTIVE, Context);
       else
          Context.Console.Notice (N_USAGE, "Invalid argument: " & Args.Get_Argument (1));
-         Druss.Commands.Driver.Usage (Args);
+         Druss.Commands.Driver.Usage (Args, Context);
       end if;
    end Execute;
 
@@ -124,7 +124,7 @@ package body Druss.Commands.Devices is
    --  Write the help associated with the command.
    --  ------------------------------
    overriding
-   procedure Help (Command   : in Command_Type;
+   procedure Help (Command   : in out Command_Type;
                    Context   : in out Context_Type) is
       pragma Unreferenced (Command);
       Console : constant Druss.Commands.Consoles.Console_Access := Context.Console;
