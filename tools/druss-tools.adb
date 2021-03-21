@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-tools -- Druss main tool
---  Copyright (C) 2017, 2019 Stephane Carrez
+--  Copyright (C) 2017, 2019, 2021 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ with Ada.Text_IO;
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Util.Commands;
-with Util.Http.Clients.Curl;
+with Util.Http.Clients.AWS;
 with Util.Log.Loggers;
 with Util.Properties;
 with Druss.Config;
@@ -89,7 +89,7 @@ begin
    end if;
    Util.Log.Loggers.Initialize (Log_Config);
    Druss.Config.Initialize (To_String (Config));
-   Util.Http.Clients.Curl.Register;
+   Util.Http.Clients.AWS.Register;
 
    --  Enter in the interactive mode.
    if Interactive then

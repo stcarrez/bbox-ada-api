@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-gateways -- Gateway management
---  Copyright (C) 2017 Stephane Carrez
+--  Copyright (C) 2017, 2021 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,12 +36,17 @@ package body Druss.Gateways is
 
    function "=" (Left, Right : in Gateway_Ref) return Boolean is
    begin
-      if Left.Value = Right.Value then
-         return True;
-      elsif Left.Is_Null or Right.Is_Null then
+      if Left.Is_Null then
+         return Right.Is_Null;
+      elsif Right.Is_Null then
          return False;
       else
-         return Left.Value.Ip = Right.Value.Ip;
+         declare
+            Left_Rule  : constant Gateway_Refs.Element_Accessor := Left.Value;
+            Right_Rule : constant Gateway_Refs.Element_Accessor := Right.Value;
+         begin
+            return Left_Rule.Element = Right_Rule.Element;
+         end;
       end if;
    end "=";
 
@@ -149,7 +154,7 @@ package body Druss.Gateways is
    begin
       for G of List loop
          if Mode = ITER_ALL or else G.Value.Enable = Expect then
-            Process (G.Value.all);
+            Process (G.Value);
          end if;
       end loop;
    end Iterate;

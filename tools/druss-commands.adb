@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands -- Commands available for Druss
---  Copyright (C) 2017, 2019 Stephane Carrez
+--  Copyright (C) 2017, 2019, 2021 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,7 +73,7 @@ package body Druss.Commands is
             for I in Arg_Pos + 1 .. Args.Get_Count loop
                Gw := Druss.Gateways.Find_IP (Context.Gateways, Args.Get_Argument (I));
                if not Gw.Is_Null then
-                  Operation (Gw.Value.all);
+                  Operation (Gw.Value);
                end if;
             end loop;
          end if;

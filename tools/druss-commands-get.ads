@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-get -- Raw JSON API Get command
---  Copyright (C) 2017, 2018, 2019 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019, 2021 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,7 @@ package Druss.Commands.Get is
    --  Write the help associated with the command.
    overriding
    procedure Help (Command   : in out Command_Type;
+                   Name      : in String;
                    Context   : in out Context_Type);
 
 end Druss.Commands.Get;
