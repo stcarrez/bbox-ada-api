@@ -1,9 +1,9 @@
-bbox.gpr
+bboxada.gpr
 bbox_tests.gpr
-bbox_tools.gpr
+bboxada_tools.gpr
 autom4te.cache
 *.tar.gz
-Makefile
+Makefile.conf
 config.status
 *~
 *.log
