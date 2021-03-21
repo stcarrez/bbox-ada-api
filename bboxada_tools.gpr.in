@@ -1,9 +1,9 @@
 with "@UTIL_DIR@config";
 with "@UTIL_DIR@utilada_sys";
-with "@UTIL_DIR@utilada_curl";
-with "bbox";
+with "@UTIL_DIR@utilada_aws";
+with "bboxada";
 
-project Bbox_Tools is
+project BboxAda_Tools is
 
    for Languages use ("Ada");
 
@@ -39,4 +39,4 @@ project Bbox_Tools is
    end Compiler;
    package Linker renames Config.Linker;
 
-end Bbox_Tools;
+end BboxAda_Tools;
