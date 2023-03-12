@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  bbox -- Bbox API
---  Copyright (C) 2017, 2019 Stephane Carrez
+--  Copyright (C) 2017, 2019, 2023 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -124,7 +124,9 @@ package body Bbox.API is
       Log.Debug ("Get {0}", URI);
       Client.Http.Set_Timeout (10.0);
       Client.Http.Get (URI, Response);
-      Util.Properties.JSON.Parse_JSON (Result, Strip_Unecessary_Array (Response.Get_Body));
+      if Response.Get_Status = 200 then
+         Util.Properties.JSON.Parse_JSON (Result, Strip_Unecessary_Array (Response.Get_Body));
+      end if;
    end Get;
 
    --  ------------------------------
