@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-wifi -- Wifi related commands
---  Copyright (C) 2017, 2018, 2019, 2021 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019, 2021, 2023 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,7 +60,7 @@ package body Druss.Commands.Wifi is
       begin
          Gateway.Refresh;
          Console.Start_Row;
-         Console.Print_Field (F_IP_ADDR, Gateway.Ip);
+         Console.Print_Field (F_IP_ADDR, To_String (Gateway.Ip));
          Print_On_Off (Console, F_BOOL, Gateway.Wifi.Get ("wireless.radio.24.enable", " "));
          Console.Print_Field (F_CHANNEL, Gateway.Wifi.Get ("wireless.radio.24.current_channel", " "));
          Console.Print_Field (F_SSID, Gateway.Wifi.Get ("wireless.ssid.24.id", " "));

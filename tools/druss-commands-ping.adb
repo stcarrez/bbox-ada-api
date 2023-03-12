@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-devices -- Print information about the devices
---  Copyright (C) 2017, 2018, 2019, 2021 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019, 2021, 2023 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,7 +92,7 @@ package body Druss.Commands.Ping is
                return;
             end if;
             Console.Start_Row;
-            Console.Print_Field (F_BBOX_IP_ADDR, Gateway.Ip);
+            Console.Print_Field (F_BBOX_IP_ADDR, To_String (Gateway.Ip));
             Console.Print_Field (F_IP_ADDR, Manager.Get (Name & ".ipaddress", ""));
             Console.Print_Field (F_HOSTNAME, Manager.Get (Name & ".hostname", ""));
             Print_Perf (Console, F_ACTIVE, Manager.Get (Name & ".ping.average", ""));

@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands -- Commands available for Druss
---  Copyright (C) 2017, 2018 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2023 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,12 @@
 --  limitations under the License.
 -----------------------------------------------------------------------
 
+with Util.Strings;
 with Util.Commands.Drivers;
 with Util.Commands.Parsers;
 with Util.Commands.Consoles;
 with Util.Commands.Consoles.Text;
+with Util.Commands.Text_IO;
 with Druss.Gateways;
 package Druss.Commands is
 
@@ -61,12 +63,18 @@ package Druss.Commands is
 
    --  Make the generic abstract console interface.
    package Consoles is
-     new Util.Commands.Consoles (Field_Type  => Field_Type,
-                                 Notice_Type => Notice_Type);
+     new Util.Commands.Consoles (Field_Type   => Field_Type,
+                                 Notice_Type  => Notice_Type,
+                                 Element_Type => Character,
+                                 Input_Type   => String,
+                                 To_Input     => Util.Strings.Image);
+
+   function To_String (S : in String) return String is (S);
 
    --  And the text console to write on stdout (a Gtk console could be done someday).
    package Text_Consoles is
-      new Consoles.Text;
+     new Consoles.Text (IO        => Util.Commands.Text_IO,
+                        To_String => To_String);
 
    type Context_Type is limited record
       Gateways : Druss.Gateways.Gateway_Vector;
@@ -76,6 +84,7 @@ package Druss.Commands is
    package Drivers is
      new Util.Commands.Drivers (Context_Type  => Context_Type,
                                 Config_Parser => Util.Commands.Parsers.No_Parser,
+                                IO            => Util.Commands.Text_IO,
                                 Driver_Name   => "druss-drivers");
 
    subtype Argument_List is Util.Commands.Argument_List;

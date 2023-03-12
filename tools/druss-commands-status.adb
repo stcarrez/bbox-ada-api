@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-status -- Druss status commands
---  Copyright (C) 2017, 2018, 2019, 2021 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019, 2021, 2023 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,13 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
+with Ada.Strings.Unbounded;
 with Util.Properties;
 with Util.Strings;
 with Druss.Gateways;
 package body Druss.Commands.Status is
+
+   use Ada.Strings.Unbounded;
 
    --  ------------------------------
    --  Execute the wifi 'status' command to print the Wifi current status.
@@ -36,7 +39,7 @@ package body Druss.Commands.Status is
       begin
          Gateway.Refresh;
          Console.Start_Row;
-         Console.Print_Field (F_IP_ADDR, Gateway.Ip);
+         Console.Print_Field (F_IP_ADDR, To_String (Gateway.Ip));
          Console.Print_Field (F_WAN_IP, Gateway.Wan.Get ("wan.ip.address", " "));
          Print_Status (Console, F_INTERNET, Gateway.Wan.Get ("wan.internet.state", " "));
          Console.Print_Field (F_VOIP, Gateway.Voip.Get ("voip.0.status", " "));

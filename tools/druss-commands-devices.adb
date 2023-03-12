@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------
 --  druss-commands-devices -- Print information about the devices
---  Copyright (C) 2017, 2018, 2019, 2021 Stephane Carrez
+--  Copyright (C) 2017, 2018, 2019, 2021, 2023 Stephane Carrez
 --  Written by Stephane Carrez (Stephane.Carrez@gmail.com)
 --
 --  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,13 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 -----------------------------------------------------------------------
+with Ada.Strings.Unbounded;
 with Util.Properties;
 with Bbox.API;
 with Druss.Gateways;
 package body Druss.Commands.Devices is
+
+   use Ada.Strings.Unbounded;
 
    --  ------------------------------
    --  Execute the wifi 'status' command to print the Wifi current status.
@@ -58,7 +61,7 @@ package body Druss.Commands.Devices is
             end case;
 
             Console.Start_Row;
-            Console.Print_Field (F_BBOX_IP_ADDR, Gateway.Ip);
+            Console.Print_Field (F_BBOX_IP_ADDR, To_String (Gateway.Ip));
             Console.Print_Field (F_IP_ADDR, Manager.Get (Name & ".ipaddress", ""));
             Console.Print_Field (F_ETHERNET, Manager.Get (Name & ".macaddress", ""));
             Console.Print_Field (F_HOSTNAME, Manager.Get (Name & ".hostname", ""));
